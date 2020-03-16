@@ -1,0 +1,8 @@
+Btcwinex,全球最专业,安全的数字资产服务平台 = 世界で最も専門的かつ安全な通貨資産サービスプラットフォームであり、BTC、VDS、EOS、LTC、ETHなどの様々な仮想通貨取引を行っております
+比特币,数字货币,比特币行情,比特币交易平台,比特币期货,虚拟币 = VDS,VOLLAR,Bitcoin trading platform,Virtual currency,Digital currency
+Btcwinex交易所是全球最专业的比特币交易平台,最安全的技术,最专业的撮合引擎为用户提供一个虚拟币交易,比特币期货,比特币行情综合类的数字货币平台. = Btcwinex is the most professional bitcoin trading platform in the world,have the safest technology and the most professional matching engine.Provide users with various virtual currency trading such as BTC,ETH,VDS,VOLLAR,EOS,LTC.Provides BTC market and BTC news in real time,Btcwinex is a comprehensive digital asset trading platform.
+请输入正确的邮箱地址 = 正しい電子メールアドレスを入力してください
+请输入正确的邮箱 = 正しいメールアドレスを入力してください
+您的密码需要8-20位，包含字母，数字，符号的两种以上。 = ログインパスワードは、文字、数字、記号、またはそれらの少なくとも2種類を使って、長さは8-20 位で組み合わせる必要があります
+请输入图形验证码！ = ピクチャーコードを入力してください
+

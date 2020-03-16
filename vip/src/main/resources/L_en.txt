@@ -1,0 +1,13 @@
+#################    英文语言包，默认不用写有特殊定义时才会写入           #############################
+
+######   安全中心谷歌认证  #####
+Google认证提示=You haven't open Google Authentication,please open now<a target="_blank" style="color:#3366CC" href="/manage/auth/google">Google Authentication</a>
+资金管理 = Balances
+账户总资产估算 = Current value
+总计 = Total
+可用 = Available
+冻结 = On Orders
+充值 = Deposit
+提币 = Withdraw
+提现 = Withdraw
+时间 = Date

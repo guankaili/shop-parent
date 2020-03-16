@@ -1,0 +1,66 @@
+{
+    coinProp:[
+        {
+            key: "usdte",
+            fundsType: 10,
+            value: "USDT",
+            propTag: "USDTE",
+            unitTag: "U",
+            priceKey: "btc_usdt_l_price",
+            weburl: "https://blockchain.info/address/",
+            coin: "false",
+            canCharge: "true",
+            canWithdraw: "true",
+            dayFreetrial: 10,
+            dayCash: 100000,
+            timesCash: 10000,
+            minFees: 1,
+            inConfirmTimes: 10,
+            outConfirmTimes: 1,
+            minCash: 1,
+            serNum: 1,
+            coinFullNameEn: "ERC20USD",
+            isERC:"true",
+            imgUrl:"http://img1.imgtn.bdimg.com/it/u=2209752467,3173192&fm=26&gp=0.jpg",
+            agreement: 102
+        }
+    ],
+    markets:[
+        ###### BTC市场配置 ######
+        {
+            numberBi:"ETH",
+            numberBiEn:"ETH",
+            numberBiFullName:"Ethereum",
+            numberBiNote:"EH",
+            numberBixNormal:"100000000",
+            numberBixShow:"100000000",
+            numberBixDian:"4",
+            numberBiFundsType:"6",
+            exchangeBi:"BTC",
+            exchangeBiEn:"BTC",
+            exchangeBiNote:"฿",
+            exchangeBiFundsType:"2",
+            market:"eth_btc",
+            exchangeBixNormal:"10000",
+            exchangeBixShow:"10000",
+            exchangeBixDian:"6",
+            entrustUrlBase:"/",
+            webId:"8",
+            maxPrice:"5000",
+            bixMinNum:"0.01",
+            bixMaxNum:"1000",
+            minAmount:"0.0001",
+            feeRate:"0.002",
+            takerFeeRate:"0.001",
+            makerFeeRate:"0.002",
+            hashSec:"",
+            serNum:1,
+            mergePrice:"0.00001,0.0001",
+            db:"ethbtcentrust",
+            listenerOpen:"false",
+            ip:"192.168.2.35",
+            port:"8021"
+        }
+    ]
+
+}

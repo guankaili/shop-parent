@@ -1,0 +1,36 @@
+{
+	mysqls: [
+        {
+            db: "qly",
+            jdbcUrl: "jdbc:mysql",
+            driverClassName: "com.mysql.cj.jdbc.Driver",
+            userName: "root",
+            pwd: "Godlike_110",
+            ip: "172.16.120.88:3306"
+        },
+        {
+            db: "Middle",
+            jdbcUrl: "jdbc:sqlserver",
+            driverClassName: "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+            userName: "sa",
+            pwd: "12345678",
+            ip: "172.16.122.1:1433"
+        },
+        {
+          db: "pda",
+          jdbcUrl: "jdbc:mysql",
+          driverClassName: "com.mysql.cj.jdbc.Driver",
+          userName: "root",
+          pwd: "Godlike_110",
+          ip: "172.16.120.88:3306"
+        },
+        {
+          db: "qly_wechat",
+          jdbcUrl: "jdbc:mysql",
+          driverClassName: "com.mysql.cj.jdbc.Driver",
+          userName: "root",
+          pwd: "Godlike_110",
+          ip: "172.16.120.88:3306"
+        }
+	]
+}

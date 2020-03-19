@@ -1,4 +1,4 @@
-package com.world.model.ywt;
+package com.world.model.sbms;
 
 import com.world.data.mysql.Bean;
 import lombok.Getter;

@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
-import java.util.Date;
 
 /**
  * 业务通门店任务统计(WorkHomeStats)实体类
@@ -15,12 +14,8 @@ import java.util.Date;
  */
 @Getter
 @Setter
-public class WorkHomeStats extends Bean implements Serializable {
+public class WorkHomeYStats extends Bean implements Serializable {
     private static final long serialVersionUID = 370942512679651283L;
-    /**
-    * 主键自增
-    */    
-    private Long id;
     /**
     * 客户编号
     */    
@@ -52,7 +47,7 @@ public class WorkHomeStats extends Bean implements Serializable {
     /**
     * 省份编号
     */    
-    private String provinceCode;
+    private Integer provinceCode;
     /**
     * 省份名称
     */    
@@ -60,7 +55,7 @@ public class WorkHomeStats extends Bean implements Serializable {
     /**
     * 城市编号
     */    
-    private String cityCode;
+    private Integer cityCode;
     /**
     * 城市名称
     */    
@@ -68,7 +63,7 @@ public class WorkHomeStats extends Bean implements Serializable {
     /**
     * 区域编号
     */    
-    private String areaCode;
+    private Integer areaCode;
     /**
     * 区域名称
     */    
@@ -84,46 +79,18 @@ public class WorkHomeStats extends Bean implements Serializable {
     /**
     * 签约门店数量-月度
     */    
-    private Integer signShopQuantityM;
+    private Integer signShopQuantityY;
     /**
     * 签约门店任务数量-月度
     */    
-    private Integer signShopTaskQuantityM;
+    private Integer signShopTaskQuantityY;
     /**
     * 签约门店任务完成数量-月度
     */    
-    private Integer signShopTaskCquantityM;
+    private Long signShopTaskCquantityY;
     /**
     * 签约门店任务未完成数量-月度
     */    
-    private Integer signShopTaskNquantityM;
-    /**
-    * 签约门店任务未完成率-月度
-    */    
-    private Double signShopTaskCrateM;
-    /**
-    * 签约门店数量-年度
-    */    
-    private Integer signShopQuantityY;
-    /**
-    * 签约门店任务数量-年度
-    */    
-    private Integer signShopTaskQuantityY;
-    /**
-    * 签约门店任务完成数量-年度
-    */
-    private Integer signShopTaskCquantityY;
-    /**
-    * 签约门店任务未完成数量-年度
-    */
-    private Integer signShopTaskNquantityY;
-    /**
-    * 签约门店任务未完成率-年度
-    */
-    private Double signShopTaskCrateY;
-    /**
-    * 抽取保存时间
-    */
-    private Date createDate;
+    private Long signShopTaskNquantityY;
 
 }

@@ -3,7 +3,7 @@ package com.world.task.sbms.work;
 import com.world.data.mysql.Bean;
 import com.world.data.mysql.Data;
 import com.world.model.dao.task.Worker;
-import com.world.model.sbms.WorkHomeStats;
+import com.world.model.sbms.WorkHomeMStats;
 import com.world.util.ObjectConversion;
 import com.world.util.SqlUtil;
 import org.springframework.util.CollectionUtils;
@@ -20,11 +20,11 @@ import java.util.List;
  * ---------------------------------------------------------------------------------*
  * 2020/3/19$ 13:21$     guankaili          v1.0.0           Created
  */
-public class WorkHomeStatsWorker extends Worker {
+public class WorkHomeMStatsWorker extends Worker {
     /*此轮定时任务结束标识*/
     private static boolean workFlag = true;
 
-    public WorkHomeStatsWorker(String name, String des) {
+    public WorkHomeMStatsWorker(String name, String des) {
         super(name, des);
     }
     @Override
@@ -41,9 +41,9 @@ public class WorkHomeStatsWorker extends Worker {
                         "t1.brand_name brandName FROM es_shop_detail t1 LEFT JOIN es_shop_type t2 ON t2.shop_type=t1.shop_type " +
                         "WHERE t1.shop_status IN (5,6) " +
                         "AND DATE_FORMAT(t1.contract_time,'%Y-%m')=DATE_FORMAT(CURDATE(),'%Y-%m')";
-                List<Bean> list = (List<Bean>) Data.Query("shop_member", sql, null, WorkHomeStats.class);
+                List<Bean> list = (List<Bean>) Data.Query("shop_member", sql, null, WorkHomeMStats.class);
                 if(!CollectionUtils.isEmpty(list)){
-                    List<WorkHomeStats> workHomeStats = ObjectConversion.copy(list,WorkHomeStats.class);
+                    List<WorkHomeMStats> workHomeStats = ObjectConversion.copy(list, WorkHomeMStats.class);
                     //获取签约门店数==月度
                     Integer signShopQuantityM = list.size();
                     //获取shopId集合
@@ -58,12 +58,12 @@ public class WorkHomeStatsWorker extends Worker {
                     List<Object> param = new ArrayList<>();
                     String shopId = SqlUtil.getInSql(shopIdArr, param);
                     //2、查询签约门店任务完成数量-月度
-                    String mcSql = "SELECT t.shop_code shopId,count(1) signShopTaskCquantityM FROM scan_batch_record_detail t " +
+                    String mcSql = "SELECT count(1) signShopTaskCquantityM , t.shop_id shopId FROM scan_batch_record_detail t " +
                             "WHERE t.scan_type = 4 AND DATE_FORMAT(t.create_datetime,'%Y-%m')=DATE_FORMAT(CURDATE(),'%Y-%m') " +
-                            "AND t.shop_code in ("+shopId+") GROUP BY t.shop_code";
-                    List<Bean> cquantityMs = (List<Bean>)Data.Query("scan_main",mcSql,param.toArray(),WorkHomeStats.class);
+                            "AND t.shop_id in ("+shopId+") GROUP BY t.shop_id";
+                    List<Bean> cquantityMs = Data.Query("scan_main",mcSql,param.toArray(), WorkHomeMStats.class);
                     if(!CollectionUtils.isEmpty(cquantityMs)){
-                        List<WorkHomeStats> cquantityMCopy = ObjectConversion.copy(list,WorkHomeStats.class);
+                        List<WorkHomeMStats> cquantityMCopy = ObjectConversion.copy(cquantityMs, WorkHomeMStats.class);
                         workHomeStats.forEach(item1 -> {
                             cquantityMCopy.forEach(item2 -> {
                                 if(item1.getShopId().equals(item2.getShopId())){
@@ -73,12 +73,12 @@ public class WorkHomeStatsWorker extends Worker {
                         });
                     }
                     //3、查询签约门店任务完成数量-月度
-                    String ncSql = "SELECT t.shop_code shopId,count(1) signShopTaskNquantityM FROM scan_batch_record_detail t " +
+                    String ncSql = "SELECT t.shop_id shopId,count(1) signShopTaskNquantityM FROM scan_batch_record_detail t " +
                             "WHERE t.scan_type = 3 AND DATE_FORMAT(t.create_datetime,'%Y-%m')=DATE_FORMAT(CURDATE(),'%Y-%m') " +
-                            "AND t.shop_code in ("+shopId+") GROUP BY t.shop_code";
-                    List<Bean> nquantityMs = (List<Bean>)Data.Query("scan_main",ncSql,param.toArray(),WorkHomeStats.class);
+                            "AND t.shop_id in ("+shopId+") GROUP BY t.shop_id";
+                    List<Bean> nquantityMs = (List<Bean>)Data.Query("scan_main",ncSql,param.toArray(), WorkHomeMStats.class);
                     if(!CollectionUtils.isEmpty(nquantityMs)){
-                        List<WorkHomeStats> nquantityMCopy = ObjectConversion.copy(list,WorkHomeStats.class);
+                        List<WorkHomeMStats> nquantityMCopy = ObjectConversion.copy(nquantityMs, WorkHomeMStats.class);
                         workHomeStats.forEach(item1 -> {
                             nquantityMCopy.forEach(item2 -> {
                                 if(item1.getShopId().equals(item2.getShopId())){
@@ -100,7 +100,7 @@ public class WorkHomeStatsWorker extends Worker {
     }
 
     public static void main(String[] args) {
-        WorkHomeStatsWorker workHomeStatsWorker = new WorkHomeStatsWorker("workHomeStatsWorker","门店任务数据同步");
+        WorkHomeMStatsWorker workHomeStatsWorker = new WorkHomeMStatsWorker("workHomeStatsWorker","门店任务数据同步");
         workHomeStatsWorker.run();
     }
 }

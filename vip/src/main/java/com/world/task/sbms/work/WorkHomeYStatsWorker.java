@@ -4,12 +4,16 @@ import com.world.data.mysql.Bean;
 import com.world.data.mysql.Data;
 import com.world.model.dao.task.Worker;
 import com.world.model.sbms.WorkHomeYStats;
+import com.world.task.sbms.thread.WorkHomeYStatsThread;
 import com.world.util.ObjectConversion;
 import com.world.util.SqlUtil;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * @author guankaili
@@ -34,7 +38,8 @@ public class WorkHomeYStatsWorker extends Worker {
             workFlag = false;
             try {
                 //1、获取签约门店信息及门店任务数==月度
-                String sql = "SELECT (t2.shop_task_m*12) signShopTaskQuantityY,t1.dealer_code dealerCode,t1.dealer_name dealerName," +
+                String sql = "SELECT (t2.shop_task_m*(TIMESTAMPDIFF(MONTH,DATE_FORMAT(t1.contract_time,'%Y-%m-%d'),DATE_FORMAT(now(),'%Y-%m-%d'))+1)) signShopTaskQuantityY," +
+                        "t1.dealer_code dealerCode,t1.dealer_name dealerName," +
                         "t1.dealer_cm_id dealerCmId,t1.shop_id shopId,t1.shop_type shopType,t1.large_area_code largeAreaCode,t1.large_area largeAreaName," +
                         "t1.shop_province provinceName,t1.shop_province_id provinceCode,t1.shop_city cityName," +
                         "t1.shop_city_id cityCode,t1.shop_county areaName,t1.shop_county_id areaCode,t1.brand_code brandCode," +
@@ -87,7 +92,19 @@ public class WorkHomeYStatsWorker extends Worker {
                             });
                         });
                     }
-                    System.out.println(workHomeStats);
+                    log.info("任务名称【WorkHomeYStatsWorker】开始执行.此轮需要执行【" + workHomeStats.size() + "】条数据任务");
+                    //构建线程池
+                    //当提交的任务数量为1000的时候，会开辟20个线程数
+                    ExecutorService executorService = Executors.newFixedThreadPool(10);
+                    CountDownLatch countDownLatch = new CountDownLatch(workHomeStats.size());
+                    for(WorkHomeYStats workHomeStat : workHomeStats){
+                        //业务处理线程
+                        WorkHomeYStatsThread workHomeYStatsThread = new WorkHomeYStatsThread(workHomeStat,countDownLatch);
+                        executorService.submit(workHomeYStatsThread);
+                    }
+                    countDownLatch.await();
+                    /*关闭线程池*/
+                    executorService.shutdown();
                 }
             } catch (Exception e) {
                 log.error("门店任务数据同步失败", e);

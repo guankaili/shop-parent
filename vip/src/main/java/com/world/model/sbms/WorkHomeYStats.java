@@ -83,7 +83,7 @@ public class WorkHomeYStats extends Bean implements Serializable {
     /**
     * 签约门店任务数量-月度
     */    
-    private Integer signShopTaskQuantityY;
+    private Long signShopTaskQuantityY;
     /**
     * 签约门店任务完成数量-月度
     */    

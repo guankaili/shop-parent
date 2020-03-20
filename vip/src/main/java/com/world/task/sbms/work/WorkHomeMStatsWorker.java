@@ -4,12 +4,16 @@ import com.world.data.mysql.Bean;
 import com.world.data.mysql.Data;
 import com.world.model.dao.task.Worker;
 import com.world.model.sbms.WorkHomeMStats;
+import com.world.task.sbms.thread.WorkHomeMStatsThread;
 import com.world.util.ObjectConversion;
 import com.world.util.SqlUtil;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * @author guankaili
@@ -67,7 +71,8 @@ public class WorkHomeMStatsWorker extends Worker {
                         workHomeStats.forEach(item1 -> {
                             cquantityMCopy.forEach(item2 -> {
                                 if(item1.getShopId().equals(item2.getShopId())){
-                                    item1.setSignShopTaskCquantityM(item2.getSignShopTaskCquantityM());
+                                    Long signShopTaskCquantityM = item2.getSignShopTaskCquantityM() != null ? item2.getSignShopTaskCquantityM() : 0;
+                                    item1.setSignShopTaskCquantityM(signShopTaskCquantityM);
                                 }
                             });
                         });
@@ -82,12 +87,28 @@ public class WorkHomeMStatsWorker extends Worker {
                         workHomeStats.forEach(item1 -> {
                             nquantityMCopy.forEach(item2 -> {
                                 if(item1.getShopId().equals(item2.getShopId())){
-                                    item1.setSignShopTaskNquantityM(item2.getSignShopTaskNquantityM());
+                                    Long signShopTaskNquantityM = item2.getSignShopTaskNquantityM() != null ? item2.getSignShopTaskNquantityM() : 0;
+                                    item1.setSignShopTaskNquantityM(signShopTaskNquantityM);
                                 }
                             });
                         });
                     }
-                    System.out.println(workHomeStats);
+                    log.info("任务名称【WorkHomeMStatsWorker】开始执行.此轮需要执行【" + workHomeStats.size() + "】条数据任务");
+                    //1、清除表数据
+                    String trancateSql = " truncate table work_home_m_stats ";
+                    Data.Delete("sbms_main",trancateSql,null);
+                    //构建线程池
+                    //当提交的任务数量为1000的时候，会开辟20个线程数
+                    ExecutorService executorService = Executors.newFixedThreadPool(10);
+                    CountDownLatch countDownLatch = new CountDownLatch(workHomeStats.size());
+                    for(WorkHomeMStats workHomeMStats : workHomeStats){
+                        //业务处理线程
+                        WorkHomeMStatsThread workHomeMStatsThread = new WorkHomeMStatsThread(workHomeMStats,countDownLatch);
+                        executorService.submit(workHomeMStatsThread);
+                    }
+                    countDownLatch.await();
+                    /*关闭线程池*/
+                    executorService.shutdown();
                 }
             } catch (Exception e) {
                 log.error("门店任务数据同步失败", e);

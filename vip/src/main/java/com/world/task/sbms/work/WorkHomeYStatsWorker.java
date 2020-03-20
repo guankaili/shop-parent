@@ -72,7 +72,8 @@ public class WorkHomeYStatsWorker extends Worker {
                         workHomeStats.forEach(item1 -> {
                             cquantityYCopy.forEach(item2 -> {
                                 if(item1.getShopId().equals(item2.getShopId())){
-                                    item1.setSignShopTaskCquantityY(item2.getSignShopTaskCquantityY());
+                                    Long signShopTaskCquantityY = item2.getSignShopTaskCquantityY() != null ? item2.getSignShopTaskCquantityY() : 0;
+                                    item1.setSignShopTaskCquantityY(signShopTaskCquantityY);
                                 }
                             });
                         });
@@ -87,12 +88,16 @@ public class WorkHomeYStatsWorker extends Worker {
                         workHomeStats.forEach(item1 -> {
                             nquantityYCopy.forEach(item2 -> {
                                 if(item1.getShopId().equals(item2.getShopId())){
-                                    item1.setSignShopTaskNquantityY(item2.getSignShopTaskNquantityY());
+                                    Long signShopTaskNquantityY = item2.getSignShopTaskNquantityY() != null ? item2.getSignShopTaskNquantityY() : 0;
+                                    item1.setSignShopTaskNquantityY(signShopTaskNquantityY);
                                 }
                             });
                         });
                     }
                     log.info("任务名称【WorkHomeYStatsWorker】开始执行.此轮需要执行【" + workHomeStats.size() + "】条数据任务");
+                    //1、清除表数据
+                    String trancateSql = " truncate table work_home_y_stats ";
+                    Data.Delete("sbms_main",trancateSql,null);
                     //构建线程池
                     //当提交的任务数量为1000的时候，会开辟20个线程数
                     ExecutorService executorService = Executors.newFixedThreadPool(10);

@@ -1,12 +1,12 @@
 package com.world.task.sbms.thread;
 
+import cn.hutool.core.date.DateUtil;
 import com.world.data.mysql.OneSql;
 import com.world.data.mysql.transaction.TransactionObject;
 import com.world.model.sbms.WorkHomeMStats;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -34,7 +34,8 @@ public class WorkHomeMStatsThread extends Thread{
         List<OneSql> sqls = new ArrayList<>();
         TransactionObject txObj = new TransactionObject();
         try{
-            String sql = "insert into work_home_m_stats (dealer_code dealer_name,dealer_cm_id,shop_id,shop_type," +
+            //1、插入数据
+            String sql = "insert into work_home_m_stats (dealer_code,dealer_name,dealer_cm_id,shop_id,shop_type," +
                     "large_area_code,large_area_name,province_code,province_name,city_code,city_name,area_code," +
                     "area_name,brand_code,brand_name,sign_shop_quantity_m,sign_shop_task_quantity_m," +
                     "sign_shop_task_cquantity_m,sign_shop_task_nquantity_m,sign_shop_task_crate_m,create_date) " +
@@ -60,7 +61,7 @@ public class WorkHomeMStatsThread extends Thread{
             param.add(workHomeMStats.getSignShopTaskCquantityM());
             param.add(workHomeMStats.getSignShopTaskNquantityM());
             param.add(0);
-            param.add(new Date());
+            param.add(DateUtil.date());
             sqls.add(new OneSql(sql, 1, param.toArray(), "sbms_main"));
             txObj.excuteUpdateList(sqls);
             if (txObj.commit()) {

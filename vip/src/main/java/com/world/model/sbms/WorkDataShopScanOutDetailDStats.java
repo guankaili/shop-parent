@@ -26,11 +26,11 @@ public class WorkDataShopScanOutDetailDStats extends Bean implements Serializabl
     /**
      * 省份编号
      */
-    private String provinceCode;
+    private Long shopProvinceId;
     /**
      * 省份名称
      */
-    private String provinceName;
+    private String shopProvince;
     /**
      * 经销商code
      */
@@ -50,19 +50,19 @@ public class WorkDataShopScanOutDetailDStats extends Bean implements Serializabl
     /**
      * 大区名称
      */
-    private String largeAreaName;
+    private String largeArea;
     /**
      * 出库扫码门店数量
      */
-    private Integer shopOutQuantity;
+    private long shopOutQuantity;
     /**
      * 出库签约门店数
      */
-    private Integer shopSignQuantity;
+    private long shopSignQuantity;
     /**
      * 出库门店参与量
      */
-    private Integer shopJoinOutQuantity;
+    private long shopJoinOutQuantity;
     /**
      * 出库门店参与率
      */

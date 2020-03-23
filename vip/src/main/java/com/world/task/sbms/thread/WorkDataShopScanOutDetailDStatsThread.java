@@ -2,7 +2,6 @@ package com.world.task.sbms.thread;
 
 import com.world.data.mysql.OneSql;
 import com.world.data.mysql.transaction.TransactionObject;
-import com.world.model.sbms.WorkDataShopScanInDetailDStats;
 import com.world.model.sbms.WorkDataShopScanOutDetailDStats;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.log4j.Logger;
@@ -52,18 +51,18 @@ public class WorkDataShopScanOutDetailDStatsThread extends Thread {
                 "VALUES" +
                 "(?,?,?,?,?,?,?,?,?,?,?,?,?)";
         List<Object> param = new ArrayList<>();
-        param.add(workDataShopScanOutDetailDStats.getProvinceCode());
-        param.add(workDataShopScanOutDetailDStats.getProvinceName());
+        param.add(workDataShopScanOutDetailDStats.getShopProvinceId());
+        param.add(workDataShopScanOutDetailDStats.getShopProvince());
         param.add(workDataShopScanOutDetailDStats.getDealerCode());
         param.add(workDataShopScanOutDetailDStats.getDealerName());
         param.add(workDataShopScanOutDetailDStats.getDealerCmId());
         param.add(workDataShopScanOutDetailDStats.getLargeAreaCode());
-        param.add(workDataShopScanOutDetailDStats.getLargeAreaName());
+        param.add(workDataShopScanOutDetailDStats.getLargeArea());
         param.add(workDataShopScanOutDetailDStats.getShopOutQuantity());
         param.add(workDataShopScanOutDetailDStats.getShopSignQuantity());
         param.add(workDataShopScanOutDetailDStats.getShopJoinOutQuantity());
         param.add(workDataShopScanOutDetailDStats.getShopJoinOutRate());
-        param.add(workDataShopScanOutDetailDStats.getShopScanOutDetailDate());
+        param.add(DateFormatUtils.format(new Date(), "yyyy-MM-dd"));
         param.add(DateFormatUtils.format(new Date(),"yyyy-MM-dd HH:mm:ss"));
         sqls.add(new OneSql(sql, 1, param.toArray(), "sbms_main"));
         txObj.excuteUpdateList(sqls);

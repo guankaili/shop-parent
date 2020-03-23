@@ -7,7 +7,7 @@ import com.world.model.sbms.WorkDataShopScanAStats;
 import com.world.task.sbms.thread.WorkDataShopScanAStatsThread;
 import com.world.util.ObjectConversion;
 import com.world.util.StringUtil;
-import org.springframework.util.CollectionUtils;
+
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -45,7 +45,7 @@ public class WorkDataShopScanAStatsWorker extends Worker {
                         "t.large_area_code AS largeAreaCode, " +
                         "t.large_area AS largeArea, " +
                         "COUNT( t.shop_status = 5 OR " +
-                        "t.shop_status = 6 OR t.shop_status = 7 OR NULL ) AS shopQuantity " +
+                        "t.shop_status = 6 OR t.shop_status = 7 OR NULL ) AS shopSignQuantity " +
                         "FROM es_shop_detail t GROUP BY t.dealer_cm_id ";
 
                 //此处已经查询到了签约门店数
@@ -53,54 +53,84 @@ public class WorkDataShopScanAStatsWorker extends Worker {
                 if (StringUtil.isNotEmpty(shopBeans)) {
                     List<WorkDataShopScanAStats> shopList = ObjectConversion.copy(shopBeans, WorkDataShopScanAStats.class);
 
-                    //获取扫码信息
-                    String sqlScan = " SELECT t.dealer_cm_id," +
-                            "COUNT(t.scan_type = 3 OR NULL) AS scanInQuantity, " +
-                            "COUNT(t.scan_type = 4 OR NULL) AS scanOutQuantity, " +
-                            "COUNT(DISTINCT t.shop_id OR NULL) AS scanJoinShopQuantity, " +
-                            "COUNT(DISTINCT t.scan_type = 3 OR NULL) AS shopJoinInQuantity, " +
-                            "COUNT(DISTINCT t.scan_type = 4 OR NULL) AS shopJoinOutQuantity " +
-                            "FROM scan_batch_record_detail t GROUP BY t.dealer_cm_id ";
-
-                    //按进出库
-
-                    //查询扫码
-                    List<Bean> ScanBeans = Data.Query("scan_main", sqlScan, null, WorkDataShopScanAStats.class);
-
-                    //查询结果数据拼装
-                    if (!CollectionUtils.isEmpty(ScanBeans)) {
-                        List<WorkDataShopScanAStats> scanList = ObjectConversion.copy(shopBeans, WorkDataShopScanAStats.class);
+                    //扫码进货 入库量 入库门店参与量
+                    String sqlIn = " SELECT " +
+                            "t.dealer_cm_id AS dealerCmId, " +
+                            "COUNT( t.id ) AS shopScanInQuantity, " +
+                            "COUNT( DISTINCT t.shop_id ) AS shopJoinInQuantity " +
+                            "FROM " +
+                            "scan_batch_record_detail t " +
+                            "WHERE " +
+                            "t.scan_type = '3' " +
+                            "GROUP BY " +
+                            "t.dealer_cm_id ";
+                    List<Bean> ScanBeanIn = Data.Query("scan_main", sqlIn, null, WorkDataShopScanAStats.class);
+                    if (StringUtil.isNotEmpty(ScanBeanIn)) {
+                        List<WorkDataShopScanAStats> inList = ObjectConversion.copy(ScanBeanIn, WorkDataShopScanAStats.class);
+                        //数据拼装
                         shopList.forEach(item1 -> {
-                            scanList.forEach(item2 -> {
+                            item1.setShopJoinInRate("0.00%");
+                            inList.forEach(item2 -> {
+                                //获取当前的排名
                                 if (item1.getDealerCmId().equals(item2.getDealerCmId())) {
-                                    //入库量
                                     item1.setShopScanInQuantity(item2.getShopScanInQuantity());
-                                    //出库量
-                                    item1.setShopScanOutQuantity(item2.getShopScanOutQuantity());
-                                    //入库门店参与数
                                     item1.setShopJoinInQuantity(item2.getShopJoinInQuantity());
-                                    //出库门店参与数
-                                    item1.setShopJoinOutQuantity(item2.getShopJoinOutQuantity());
+                                    if (item1.getShopJoinInQuantity()!=0){
+                                        item1.setShopJoinInRate(accuracy(item1.getShopJoinInQuantity(),item1.getShopSignQuantity(),2));
+                                    }else {
+                                        item1.setShopJoinInRate("0.00%");
+                                    }
 
-                                    //此处来计算   入库门店参与率   出库门店参与率
-                                    item1.setShopJoinInRate(accuracy(item2.getShopJoinInQuantity(), item1.getShopSignQuantity(), 1));
-                                    item1.setShopJoinOutRate(accuracy(item2.getShopJoinOutQuantity(), item1.getShopSignQuantity(), 1));
                                 }
                             });
                         });
-                        //构建线程池
-                        //当提交的任务数量为1000的时候，会开辟20个线程数
-                        ExecutorService executorService = Executors.newFixedThreadPool(10);
-                        CountDownLatch countDownLatch = new CountDownLatch(shopList.size());
-                        for (WorkDataShopScanAStats workDataShopScanAStats : shopList) {
-                            //业务处理线程
-                            WorkDataShopScanAStatsThread workDataShopScanAStatsThread = new WorkDataShopScanAStatsThread(workDataShopScanAStats, countDownLatch);
-                            executorService.submit(workDataShopScanAStatsThread);
-                        }
-                        countDownLatch.await();
-                        /*关闭线程池*/
-                        executorService.shutdown();
                     }
+
+                    //扫码出货 出库量 出库门店参与量
+                    String sqlOut = " SELECT " +
+                            "t.dealer_cm_id AS dealerCmId, " +
+                            "COUNT( t.id ) AS shopScanOutQuantity, " +
+                            "COUNT( DISTINCT t.shop_id ) AS shopJoinOutQuantity " +
+                            "FROM " +
+                            "scan_batch_record_detail t " +
+                            "WHERE " +
+                            "t.scan_type = '4' " +
+                            "GROUP BY " +
+                            "t.dealer_cm_id ";
+                    List<Bean> ScanBeanOut = Data.Query("scan_main", sqlOut, null, WorkDataShopScanAStats.class);
+                    if (StringUtil.isNotEmpty(ScanBeanOut)) {
+                        if (StringUtil.isNotEmpty(ScanBeanOut)) {
+                            List<WorkDataShopScanAStats> outList = ObjectConversion.copy(ScanBeanOut, WorkDataShopScanAStats.class);
+                            //数据拼装
+                            shopList.forEach(item1 -> {
+                                item1.setShopJoinOutRate("0.00%");
+                                outList.forEach(item2 -> {
+                                    //获取当前的排名
+                                    if (item1.getDealerCmId().equals(item2.getDealerCmId())) {
+                                        item1.setShopScanOutQuantity(item2.getShopScanOutQuantity());
+                                        item1.setShopJoinOutQuantity(item2.getShopJoinOutQuantity());
+                                        if (item1.getShopJoinOutQuantity()!=0){
+                                        item1.setShopJoinOutRate(accuracy(item1.getShopJoinOutQuantity(),item1.getShopSignQuantity(),2));
+                                        }else {
+                                            item1.setShopJoinOutRate("0.00%");
+                                        }
+                                    }
+                                });
+                            });
+                        }
+                    }
+                    //构建线程池
+                    //当提交的任务数量为1000的时候，会开辟20个线程数
+                    ExecutorService executorService = Executors.newFixedThreadPool(10);
+                    CountDownLatch countDownLatch = new CountDownLatch(shopList.size());
+                    for (WorkDataShopScanAStats workDataShopScanAStats : shopList) {
+                        //业务处理线程
+                        WorkDataShopScanAStatsThread workDataShopScanAStatsThread = new WorkDataShopScanAStatsThread(workDataShopScanAStats, countDownLatch);
+                        executorService.submit(workDataShopScanAStatsThread);
+                    }
+                    countDownLatch.await();
+                    /*关闭线程池*/
+                    executorService.shutdown();
                 }
             } catch (Exception e) {
                 log.error("门店扫码首页数据同步失败", e);

@@ -40,69 +40,63 @@ public class WorkDataShopScanInDetailDStatsWorker extends Worker {
     @Override
     public void run() {
 
-        log.info("门店扫码首页数据任务统计:【门店扫码首页数据数据同步】开始");
+        log.info("门店扫码数据任务统计:【门店扫码入库详细列表数据数据同步】开始");
         if (workFlag) {
             workFlag = false;
             try {
-                String sqlIn = " SELECT" +
-                        "t.province_code AS provinceCode, " +
-                        "t.province_name AS provinceName, " +
+                //用业务员id查询店铺表
+                //用业务员id--查询扫码表的统计
+                String sqlShop = " SELECT " +
+                        "t.shop_province_id AS shopProvinceId, " +
+                        "t.shop_Province AS shopProvince, " +
                         "t.dealer_name AS dealerName, " +
                         "t.dealer_code AS dealerCode, " +
                         "t.dealer_cm_id AS dealerCmId, " +
+                        "t.large_area_code AS largeAreaCode, " +
+                        "t.large_area AS largeArea, " +
                         "t.dealer_cm_name AS dealerCmName, " +
-                        "COUNT( t.id ) AS shopInQuantity, " +
-                        "COUNT( DISTINCT t.shop_id ) AS shopJoinInQuantity " +
+                        "COUNT( t.shop_id ) AS shopSignQuantity " +
                         "FROM " +
-                        "scan_batch_record_detail t " +
+                        "es_shop_detail t " +
                         "WHERE " +
-                        "t.scan_type = 3 " +
-                        "AND to_days( t.create_datetime ) = to_days( " +
+                        "t.shop_status IN ( 5, 6, 7 ) " +
+                        "AND to_days( t.contract_time ) = to_days( " +
                         "now()) " +
                         "GROUP BY " +
                         "t.dealer_cm_id ";
-                List<Bean> shopBeans = Data.Query("scan_main", sqlIn, null, WorkDataShopScanInDetailDStats.class);
+
+                //查询店铺数量
+                List<Bean> shopBeans = Data.Query("shop_member", sqlShop, null, WorkDataShopScanInDetailDStats.class);
                 if (StringUtil.isNotEmpty(shopBeans)) {
                     List<WorkDataShopScanInDetailDStats> inDetailDStats = ObjectConversion.copy(shopBeans, WorkDataShopScanInDetailDStats.class);
-
-                    //获取业务员id
-                    List<String> dealerCmId = new ArrayList<>();
-                    inDetailDStats.forEach(item -> {
-                        dealerCmId.add(item.getDealerCmId());
-                    });
-
-                    //用业务员id查询店铺表
-                    //用业务员id--查询扫码表的统计
-                    String sqlShop = " SELECT" +
-                            "t.province_code AS provinceCode, " +
-                            "t.province_name AS provinceName, " +
+                    String sqlIn = " SELECT " +
                             "t.dealer_name AS dealerName, " +
                             "t.dealer_code AS dealerCode, " +
                             "t.dealer_cm_id AS dealerCmId, " +
                             "t.dealer_cm_name AS dealerCmName, " +
-                            "COUNT( t.shop_id ) AS shopSignQuantity " +
+                            "COUNT( t.id ) AS shopInQuantity, " +
+                            "COUNT( DISTINCT t.shop_id ) AS shopJoinInQuantity " +
                             "FROM " +
-                            "es_shop_detail t " +
+                            "scan_batch_record_detail t " +
                             "WHERE " +
-                            "t.shop_status IN ( 5, 6, 7 ) " +
-                            "AND to_days( t.contract_time ) = to_days( " +
+                            "t.scan_type = 3 " +
+                            "AND to_days( t.create_datetime ) = to_days( " +
                             "now()) " +
-                            "AND t.dealer_cm_id IN (" + dealerCmId + ") " +
                             "GROUP BY " +
                             "t.dealer_cm_id ";
-
-                    //查询店铺数量
-                    List<Bean> ScanBeans = Data.Query("shop_member", sqlShop, null, WorkDataShopScanInDetailDStats.class);
-                    if (StringUtil.isNotEmpty(ScanBeans)) {
-                        List<WorkDataShopScanInDetailDStats> inDetailDStatsTow = ObjectConversion.copy(shopBeans, WorkDataShopScanInDetailDStats.class);
-
+                    List<Bean> scanBeans = Data.Query("scan_main", sqlIn, null, WorkDataShopScanInDetailDStats.class);
+                    if (StringUtil.isNotEmpty(scanBeans)) {
+                        List<WorkDataShopScanInDetailDStats> inDetailDStatsTow = ObjectConversion.copy(scanBeans, WorkDataShopScanInDetailDStats.class);
                         inDetailDStats.forEach(item1 -> {
+                            item1.setShopJoinInRate("0.00%");
                             inDetailDStatsTow.forEach(item2 -> {
                                 if (item1.getDealerCmId().equals(item2.getDealerCmId())) {
                                     //入库量
-                                    item1.setShopSignQuantity(item2.getShopSignQuantity());
+                                    item1.setShopInQuantity(item2.getShopInQuantity());
+                                    //参与量
+                                    item1.setShopJoinInQuantity(item2.getShopJoinInQuantity());
                                     //计算参与率
-                                    item1.setShopJoinInRate(accuracy(item2.getShopJoinInQuantity(), item2.getShopSignQuantity(), 3));
+                                    item1.setShopJoinInRate(accuracy(item1.getShopJoinInQuantity(), item1.getShopSignQuantity(), 2));
                                 }
                             });
                         });
@@ -122,7 +116,7 @@ public class WorkDataShopScanInDetailDStatsWorker extends Worker {
                 }
 
             } catch (Exception e) {
-                log.error("门店扫码首页数据同步失败", e);
+                log.error("门店扫码入库详细列表数据同步失败", e);
             } finally {
                 workFlag = true;
             }

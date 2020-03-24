@@ -3,6 +3,7 @@ package com.world.task.sbms.thread;
 import com.world.data.mysql.OneSql;
 import com.world.data.mysql.transaction.TransactionObject;
 import com.world.model.sbms.DataShopScanInDetailDStats;
+import com.world.util.StringUtil;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.log4j.Logger;
 
@@ -34,37 +35,44 @@ public class DataShopScanInDetailDStatsThread extends Thread {
         List<OneSql> sqls = new ArrayList<>();
         TransactionObject txObj = new TransactionObject();
         try {
-            String sql = "INSERT INTO data_scan_in_detail_stats ( " +
-                    "province_code, " +
-                    "province_name, " +
-                    "dealer_code, " +
-                    "dealer_name, " +
-                    "dealer_cm_id, " +
-                    "large_area_code, " +
-                    "large_area_name, " +
-                    "shop_in_quantity, " +
-                    "shop_sign_quantity, " +
-                    "shop_join_in_quantity, " +
-                    "shop_join_in_rate, " +
-                    "shop_scan_in_detail_date, " +
-                    "create_date )" +
-                    "VALUES" +
-                    "(?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            StringBuffer sql = new StringBuffer();
+
+            //用于更新的sql
+            String startSql = "";
+            String endSql = "";
+
+            //基本数据
             List<Object> param = new ArrayList<>();
-            param.add(dataShopScanInDetailDStats.getShopProvinceId());
-            param.add(dataShopScanInDetailDStats.getShopProvince());
-            param.add(dataShopScanInDetailDStats.getDealerCode());
-            param.add(dataShopScanInDetailDStats.getDealerName());
-            param.add(dataShopScanInDetailDStats.getDealerCmId());
-            param.add(dataShopScanInDetailDStats.getLargeAreaCode());
-            param.add(dataShopScanInDetailDStats.getLargeArea());
-            param.add(dataShopScanInDetailDStats.getShopInQuantity());
-            param.add(dataShopScanInDetailDStats.getShopSignQuantity());
-            param.add(dataShopScanInDetailDStats.getShopJoinInQuantity());
-            param.add(dataShopScanInDetailDStats.getShopJoinInRate());
-            param.add(DateFormatUtils.format(new Date(), "yyyy-MM-dd"));
-            param.add(DateFormatUtils.format(new Date(), "yyyy-MM-dd HH:mm:ss"));
-            sqls.add(new OneSql(sql, 1, param.toArray(), "sbms_main"));
+
+            //查询是否存在这个 业务员的id
+            List<Object> list = txObj.excuteQuery(new OneSql("SELECT t1.id FROM data_scan_in_detail_stats t1 " +
+                    "WHERE t1.dealer_cm_id = '" + dataShopScanInDetailDStats.getDealerCmId() + "' ", 1, null, "sbms_main"));
+            //更新操作
+            if (StringUtil.isNotEmpty(list)) {
+                startSql = " UPDATE ";
+                endSql = " WHERE dealer_cm_id = '" + dataShopScanInDetailDStats.getDealerCmId() + "' ";
+            } else {
+                //插入操作
+                startSql = " INSERT ";
+                endSql = "  ";
+            }
+
+            sql.append(""+startSql+" data_scan_in_detail_stats SET ");
+            if (dataShopScanInDetailDStats.getDealerCode() != null){param.add(dataShopScanInDetailDStats.getDealerCode());sql.append(" dealer_code = ?, ");}
+            if (dataShopScanInDetailDStats.getDealerName() != null){param.add(dataShopScanInDetailDStats.getDealerName());sql.append(" dealer_name = ?, ");}
+            if (dataShopScanInDetailDStats.getDealerCmId() != null){param.add(dataShopScanInDetailDStats.getDealerCmId());sql.append(" dealer_cm_id = ?, ");}
+            if (dataShopScanInDetailDStats.getLargeAreaCode() != null){param.add(dataShopScanInDetailDStats.getLargeAreaCode());sql.append(" large_area_code = ?, ");}
+            if (dataShopScanInDetailDStats.getLargeArea() != null){param.add(dataShopScanInDetailDStats.getLargeArea());sql.append(" large_area_name = ?, ");}
+            if (dataShopScanInDetailDStats.getShopProvinceId() != null){param.add(dataShopScanInDetailDStats.getShopProvinceId());sql.append(" province_code = ?, ");}
+            if (dataShopScanInDetailDStats.getShopProvince() != null){param.add(dataShopScanInDetailDStats.getShopProvince());sql.append(" province_name = ?, ");}
+            param.add(dataShopScanInDetailDStats.getShopInQuantity());sql.append(" shop_in_quantity = ?, ");
+            param.add(dataShopScanInDetailDStats.getShopSignQuantity());sql.append(" shop_sign_quantity = ?, ");
+            param.add(dataShopScanInDetailDStats.getShopJoinInQuantity());sql.append(" shop_join_in_quantity = ?, ");
+            if (dataShopScanInDetailDStats.getShopJoinInRate() != null){param.add(dataShopScanInDetailDStats.getShopJoinInRate());sql.append(" shop_join_in_rate = ?, ");}
+            param.add(DateFormatUtils.format(new Date(), "yyyy-MM-dd"));sql.append(" shop_scan_in_detail_date = ?, ");
+            param.add(DateFormatUtils.format(new Date(), "yyyy-MM-dd HH:mm:ss"));sql.append(" create_date = ? ");
+            sql.append(" "+endSql+" ");
+            sqls.add(new OneSql(sql.toString(), 1, param.toArray(), "sbms_main"));
             txObj.excuteUpdateList(sqls);
             if (txObj.commit()) {
                 logger.info("插入成功");

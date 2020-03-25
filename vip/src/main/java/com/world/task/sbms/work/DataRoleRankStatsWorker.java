@@ -7,5 +7,5 @@ package com.world.task.sbms.work;
  * @date 2020/3/23 18:54
  * @desc
  **/
-public class DataRoleRankStats {
+class DataRoleRankStats {
 }

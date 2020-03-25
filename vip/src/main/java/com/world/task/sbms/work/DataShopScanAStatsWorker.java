@@ -75,12 +75,6 @@ public class DataShopScanAStatsWorker extends Worker {
                                 if (item1.getDealerCmId().equals(item2.getDealerCmId())) {
                                     item1.setShopScanInQuantity(item2.getShopScanInQuantity());
                                     item1.setShopJoinInQuantity(item2.getShopJoinInQuantity());
-                                    if (item1.getShopJoinInQuantity()!=0){
-                                        item1.setShopJoinInRate(accuracy(item1.getShopJoinInQuantity(),item1.getShopSignQuantity(),2));
-                                    }else {
-                                        item1.setShopJoinInRate("0.00%");
-                                    }
-
                                 }
                             });
                         });
@@ -109,11 +103,6 @@ public class DataShopScanAStatsWorker extends Worker {
                                     if (item1.getDealerCmId().equals(item2.getDealerCmId())) {
                                         item1.setShopScanOutQuantity(item2.getShopScanOutQuantity());
                                         item1.setShopJoinOutQuantity(item2.getShopJoinOutQuantity());
-                                        if (item1.getShopJoinOutQuantity()!=0){
-                                        item1.setShopJoinOutRate(accuracy(item1.getShopJoinOutQuantity(),item1.getShopSignQuantity(),2));
-                                        }else {
-                                            item1.setShopJoinOutRate("0.00%");
-                                        }
                                     }
                                 });
                             });
@@ -143,16 +132,5 @@ public class DataShopScanAStatsWorker extends Worker {
     public static void main(String[] args) {
         DataShopScanAStatsWorker dataShopScanAStatsWorker = new DataShopScanAStatsWorker("workDataShopScanAStatsWorker", "门店统计首页统计月统计 数据同步");
         dataShopScanAStatsWorker.run();
-    }
-
-    //用来计算概率的方法
-    public static String accuracy(double num, double total, int scale) {
-        DecimalFormat df = (DecimalFormat) NumberFormat.getInstance();
-        //可以设置精确几位小数
-        df.setMaximumFractionDigits(scale);
-        //模式 例如四舍五入
-        df.setRoundingMode(RoundingMode.HALF_UP);
-        double accuracy_num = num / total * 100;
-        return df.format(accuracy_num) + "%";
     }
 }

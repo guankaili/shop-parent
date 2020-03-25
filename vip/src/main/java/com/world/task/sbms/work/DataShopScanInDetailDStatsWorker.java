@@ -7,10 +7,6 @@ import com.world.model.sbms.DataShopScanInDetailDStats;
 import com.world.task.sbms.thread.DataShopScanInDetailDStatsThread;
 import com.world.util.ObjectConversion;
 import com.world.util.StringUtil;
-
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -90,8 +86,6 @@ public class DataShopScanInDetailDStatsWorker extends Worker {
                                     item1.setShopInQuantity(item2.getShopInQuantity());
                                     //参与量
                                     item1.setShopJoinInQuantity(item2.getShopJoinInQuantity());
-                                    //计算参与率
-                                    item1.setShopJoinInRate(accuracy(item1.getShopJoinInQuantity(), item1.getShopSignQuantity(), 2));
                                 }
                             });
                         });
@@ -116,17 +110,6 @@ public class DataShopScanInDetailDStatsWorker extends Worker {
                 workFlag = true;
             }
         }
-    }
-
-    //用来计算概率的方法
-    public static String accuracy(double num, double total, int scale) {
-        DecimalFormat df = (DecimalFormat) NumberFormat.getInstance();
-        //可以设置精确几位小数
-        df.setMaximumFractionDigits(scale);
-        //模式 例如四舍五入
-        df.setRoundingMode(RoundingMode.HALF_UP);
-        double accuracy_num = num / total * 100;
-        return df.format(accuracy_num) + "%";
     }
 
     public static void main(String[] args) {

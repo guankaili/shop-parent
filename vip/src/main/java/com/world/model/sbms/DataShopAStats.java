@@ -52,6 +52,14 @@ public class DataShopAStats extends Bean implements Serializable {
      */
     private String brandName;
     /**
+     * 省code
+     */
+    private Long shopProvinceId;
+    /**
+     * 省名
+     */
+    private String shopProvince;
+    /**
      * 累计门店数
      */
     private Long shopTotalQuantity;

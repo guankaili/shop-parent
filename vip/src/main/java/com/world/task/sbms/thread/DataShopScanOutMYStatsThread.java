@@ -47,7 +47,8 @@ public class DataShopScanOutMYStatsThread extends Thread {
 
             //查询是否存在这个 业务员的id
             List<Object> list = txObj.excuteQuery(new OneSql("SELECT t1.id FROM data_scan_out_stats t1 " +
-                    "WHERE t1.dealer_cm_id = '" + dataShopScanOutMYFromStats.getDealerCmId() + "' ", 1, null, "sbms_main"));
+                    "WHERE t1.dealer_cm_id = '" + dataShopScanOutMYFromStats.getDealerCmId() + "' and t1.`year` = '"+
+                    dataShopScanOutMYFromStats.getScanYear()+"' ", 1, null, "sbms_main"));
             //更新操作
             if (StringUtil.isNotEmpty(list)) {
                 startSql = " UPDATE ";

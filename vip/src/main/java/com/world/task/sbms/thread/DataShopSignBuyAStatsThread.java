@@ -48,11 +48,11 @@ public class DataShopSignBuyAStatsThread extends Thread {
 
             //查询是否存在这个 业务员的id
             List<Object> list = txObj.excuteQuery(new OneSql("SELECT t1.id FROM data_shop_signbuy_stats t1 " +
-                    "WHERE t1.dealer_cm_id = '" + dataShopSignBuyAFromStats.getDealerCmId() + "' ", 1, null, "sbms_main"));
+                    "WHERE t1.dealer_cm_id = '" + dataShopSignBuyAFromStats.getDealerCmId() + "' and t1.`year` = '"+dataShopSignBuyAFromStats.getShopSignBuyYear()+"' ", 1, null, "sbms_main"));
             //更新操作
             if (StringUtil.isNotEmpty(list)) {
                 startSql = " UPDATE ";
-                endSql = " WHERE dealer_cm_id = '" + dataShopSignBuyAFromStats.getDealerCmId() + "' ";
+                endSql = " WHERE dealer_cm_id = '" + dataShopSignBuyAFromStats.getDealerCmId() + "' AND `year` = '"+dataShopSignBuyAFromStats.getShopSignBuyYear()+"'";
             } else {
                 //插入操作
                 startSql = " INSERT ";

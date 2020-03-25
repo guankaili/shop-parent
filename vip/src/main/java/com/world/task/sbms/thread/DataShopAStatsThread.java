@@ -61,6 +61,8 @@ public class DataShopAStatsThread extends Thread{
             if (dataShopAStats.getDealerCmId() != null){param.add(dataShopAStats.getDealerCmId());sql.append(" dealer_cm_id = ?, ");}
             if (dataShopAStats.getLargeAreaCode() != null){param.add(dataShopAStats.getLargeAreaCode());sql.append(" large_area_code = ?, ");}
             if (dataShopAStats.getLargeArea() != null){param.add(dataShopAStats.getLargeArea());sql.append(" large_area_name = ?, ");}
+            if (dataShopAStats.getShopProvinceId() != null){param.add(dataShopAStats.getShopProvinceId());sql.append(" province_code = ?, ");}
+            if (dataShopAStats.getShopProvince() != null){param.add(dataShopAStats.getShopProvince());sql.append(" province_name = ?, ");}
             if (dataShopAStats.getShopTotalQuantity() != null){param.add(dataShopAStats.getShopTotalQuantity());sql.append(" shop_total_quantity = ?, ");}
             if (dataShopAStats.getShopPanicQuantity() != null){param.add(dataShopAStats.getShopPanicQuantity());sql.append(" shop_panic_quantity = ?, ");}
             if (dataShopAStats.getShopAddQuantity() != null){param.add(dataShopAStats.getShopAddQuantity());sql.append(" shop_add_quantity = ?, ");}

@@ -92,8 +92,6 @@ public class DataShopScanOutDetailDStatsWorker extends Worker {
                                     item1.setShopOutQuantity(item2.getShopOutQuantity());
                                     //参与量
                                     item1.setShopJoinOutQuantity(item2.getShopJoinOutQuantity());
-                                    //计算参与率
-                                    item1.setShopJoinOutRate(accuracy(item1.getShopJoinOutQuantity(), item1.getShopSignQuantity(), 2));
                                 }
                             });
                         });
@@ -118,17 +116,6 @@ public class DataShopScanOutDetailDStatsWorker extends Worker {
                 workFlag = true;
             }
         }
-    }
-
-    //用来计算概率的方法
-    public static String accuracy(double num, double total, int scale) {
-        DecimalFormat df = (DecimalFormat) NumberFormat.getInstance();
-        //可以设置精确几位小数
-        df.setMaximumFractionDigits(scale);
-        //模式 例如四舍五入
-        df.setRoundingMode(RoundingMode.HALF_UP);
-        double accuracy_num = num / total * 100;
-        return df.format(accuracy_num) + "%";
     }
 
     public static void main(String[] args) {

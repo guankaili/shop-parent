@@ -46,11 +46,11 @@ public class DataShopScanOutDetailDStatsThread extends Thread {
 
         //查询是否存在这个 业务员的id
         List<Object> list = txObj.excuteQuery(new OneSql("SELECT t1.id FROM data_scan_out_detail_stats t1 " +
-                "WHERE t1.dealer_cm_id = '" + dataShopScanOutDetailDStats.getDealerCmId() + "' ", 1, null, "sbms_main"));
+                "WHERE t1.dealer_cm_id = '" + dataShopScanOutDetailDStats.getDealerCmId() + "'  AND to_days(t1.shop_scan_out_detail_date) = to_days(now())  ", 1, null, "sbms_main"));
         //更新操作
         if (StringUtil.isNotEmpty(list)) {
             startSql = " UPDATE ";
-            endSql = " WHERE dealer_cm_id = '" + dataShopScanOutDetailDStats.getDealerCmId() + "' ";
+            endSql = " WHERE dealer_cm_id = '" + dataShopScanOutDetailDStats.getDealerCmId() + "'  AND to_days(shop_scan_out_detail_date) = to_days(now()) ";
         } else {
             //插入操作
             startSql = " INSERT ";

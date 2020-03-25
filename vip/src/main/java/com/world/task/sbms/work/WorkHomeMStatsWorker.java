@@ -63,7 +63,7 @@ public class WorkHomeMStatsWorker extends Worker {
                     String shopId = SqlUtil.getInSql(shopIdArr, param);
                     //2、查询签约门店任务完成数量-月度
                     String mcSql = "SELECT count(1) signShopTaskCquantityM , t.shop_id shopId FROM scan_batch_record_detail t " +
-                            "WHERE t.scan_type = 4 AND DATE_FORMAT(t.create_datetime,'%Y-%m')=DATE_FORMAT(CURDATE(),'%Y-%m') " +
+                            "WHERE t.scan_type = 3 AND DATE_FORMAT(t.create_datetime,'%Y-%m')=DATE_FORMAT(CURDATE(),'%Y-%m') " +
                             "AND t.shop_id in ("+shopId+") GROUP BY t.shop_id";
                     List<Bean> cquantityMs = Data.Query("scan_main",mcSql,param.toArray(), WorkHomeMStats.class);
                     if(!CollectionUtils.isEmpty(cquantityMs)){
@@ -77,20 +77,16 @@ public class WorkHomeMStatsWorker extends Worker {
                             });
                         });
                     }
-                    //3、查询签约门店任务完成数量-月度
-                    String ncSql = "SELECT t.shop_id shopId,count(1) signShopTaskNquantityM FROM scan_batch_record_detail t " +
+                    //3、查询签约门店完成任务的门店数-月度
+                    String ncSql = "SELECT DISTINCT(t.shop_id) shopId FROM scan_batch_record_detail t " +
                             "WHERE t.scan_type = 3 AND DATE_FORMAT(t.create_datetime,'%Y-%m')=DATE_FORMAT(CURDATE(),'%Y-%m') " +
-                            "AND t.shop_id in ("+shopId+") GROUP BY t.shop_id";
+                            "AND t.shop_id in ("+shopId+")";
                     List<Bean> nquantityMs = (List<Bean>)Data.Query("scan_main",ncSql,param.toArray(), WorkHomeMStats.class);
                     if(!CollectionUtils.isEmpty(nquantityMs)){
-                        List<WorkHomeMStats> nquantityMCopy = ObjectConversion.copy(nquantityMs, WorkHomeMStats.class);
                         workHomeStats.forEach(item1 -> {
-                            nquantityMCopy.forEach(item2 -> {
-                                if(item1.getShopId().equals(item2.getShopId())){
-                                    Long signShopTaskNquantityM = item2.getSignShopTaskNquantityM() != null ? item2.getSignShopTaskNquantityM() : 0;
-                                    item1.setSignShopTaskNquantityM(signShopTaskNquantityM);
-                                }
-                            });
+                            //未完成任务的门店数
+                            Integer noCompleteCount = signShopQuantityM - nquantityMs.size();
+                            item1.setSignShopTaskNquantityM(Long.valueOf(noCompleteCount.toString()));
                         });
                     }
                     log.info("任务名称【WorkHomeMStatsWorker】开始执行.此轮需要执行【" + workHomeStats.size() + "】条数据任务");

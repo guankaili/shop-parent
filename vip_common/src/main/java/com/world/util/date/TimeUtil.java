@@ -74,6 +74,22 @@ public class TimeUtil
 		}
 	}
 
+	/**
+	 * 返回一个日期，只用来做显示
+	 *
+	 * @param nowDate
+	 * @return
+	 */
+	public static String getStringByDate(Date date, String formatter) {
+
+		SimpleDateFormat sdf = new SimpleDateFormat(formatter);
+		try {
+			return sdf.format(date);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
 	// 获得本周一的日期
 	public static String getMondayOFWeek() {
 		GregorianCalendar cal = new GregorianCalendar();

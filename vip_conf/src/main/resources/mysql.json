@@ -1,36 +1,36 @@
 {
 	mysqls: [
         {
-            db: "qly",
-            jdbcUrl: "jdbc:mysql",
-            driverClassName: "com.mysql.cj.jdbc.Driver",
-            userName: "root",
-            pwd: "Godlike_110",
-            ip: "172.16.120.88:3306"
-        },
-        {
-          db: "sbms_main",
+          db: "shop_trade",
           jdbcUrl: "jdbc:mysql",
           driverClassName: "com.mysql.cj.jdbc.Driver",
           userName: "root",
           pwd: "Godlike_110",
           ip: "172.16.120.88:3306"
         },
-        {
-          db: "shop_member",
-          jdbcUrl: "jdbc:mysql",
-          driverClassName: "com.mysql.cj.jdbc.Driver",
-          userName: "root",
-          pwd: "Godlike_110",
-          ip: "172.16.120.88:3306"
-        },
-        {
+       {
+        db: "shop_goods",
+        jdbcUrl: "jdbc:mysql",
+        driverClassName: "com.mysql.cj.jdbc.Driver",
+        userName: "root",
+        pwd: "Godlike_110",
+        ip: "172.16.120.88:3306"
+       },
+      {
+        db: "shop_member",
+        jdbcUrl: "jdbc:mysql",
+        driverClassName: "com.mysql.cj.jdbc.Driver",
+        userName: "root",
+        pwd: "Godlike_110",
+        ip: "172.16.120.88:3306"
+      },
+       {
           db: "scan_main",
           jdbcUrl: "jdbc:mysql",
           driverClassName: "com.mysql.cj.jdbc.Driver",
           userName: "root",
           pwd: "Godlike_110",
           ip: "172.16.120.88:3306"
-        }
+       }
 	]
 }

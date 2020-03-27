@@ -49,7 +49,7 @@ public class WorkHomeYStatsWorker extends Worker {
                 List<Bean> list = (List<Bean>) Data.Query("shop_member", sql, null, WorkHomeYStats.class);
                 if(!CollectionUtils.isEmpty(list)){
                     List<WorkHomeYStats> workHomeStats = ObjectConversion.copy(list, WorkHomeYStats.class);
-                    //获取签约门店数==月度
+                    //获取签约门店数==年度
                     Integer signShopQuantityY = list.size();
                     //获取shopId集合
                     List<Integer> shopIds = new ArrayList<>();
@@ -62,9 +62,9 @@ public class WorkHomeYStatsWorker extends Worker {
                     //拼接in条件sql
                     List<Object> param = new ArrayList<>();
                     String shopId = SqlUtil.getInSql(shopIdArr, param);
-                    //2、查询签约门店任务完成数量-月度
+                    //2、查询签约门店任务完成数量-年度
                     String mcSql = "SELECT count(1) signShopTaskCquantityY , t.shop_id shopId FROM scan_batch_record_detail t " +
-                            "WHERE t.scan_type = 4 AND DATE_FORMAT(t.create_datetime,'%Y')=DATE_FORMAT(CURDATE(),'%Y') " +
+                            "WHERE t.scan_type = 3 AND DATE_FORMAT(t.create_datetime,'%Y')=DATE_FORMAT(CURDATE(),'%Y') " +
                             "AND t.shop_id in ("+shopId+") GROUP BY t.shop_id";
                     List<Bean> cquantityMs = Data.Query("scan_main",mcSql,param.toArray(), WorkHomeYStats.class);
                     if(!CollectionUtils.isEmpty(cquantityMs)){
@@ -78,20 +78,16 @@ public class WorkHomeYStatsWorker extends Worker {
                             });
                         });
                     }
-                    //3、查询签约门店任务完成数量-月度
-                    String ncSql = "SELECT t.shop_id shopId,count(1) signShopTaskNquantityY FROM scan_batch_record_detail t " +
+                    //3、查询签约门店完成任务的门店数-年度
+                    String ncSql = "SELECT DISTINCT(t.shop_id) shopId FROM scan_batch_record_detail t " +
                             "WHERE t.scan_type = 3 AND DATE_FORMAT(t.create_datetime,'%Y')=DATE_FORMAT(CURDATE(),'%Y') " +
-                            "AND t.shop_id in ("+shopId+") GROUP BY t.shop_id";
+                            "AND t.shop_id in ("+shopId+") ";
                     List<Bean> nquantityMs = (List<Bean>)Data.Query("scan_main",ncSql,param.toArray(), WorkHomeYStats.class);
                     if(!CollectionUtils.isEmpty(nquantityMs)){
-                        List<WorkHomeYStats> nquantityYCopy = ObjectConversion.copy(nquantityMs, WorkHomeYStats.class);
                         workHomeStats.forEach(item1 -> {
-                            nquantityYCopy.forEach(item2 -> {
-                                if(item1.getShopId().equals(item2.getShopId())){
-                                    Long signShopTaskNquantityY = item2.getSignShopTaskNquantityY() != null ? item2.getSignShopTaskNquantityY() : 0;
-                                    item1.setSignShopTaskNquantityY(signShopTaskNquantityY);
-                                }
-                            });
+                            //未完成任务的门店数
+                            Integer noCompleteCount = signShopQuantityY - nquantityMs.size();
+                            item1.setSignShopTaskNquantityY(Long.valueOf(noCompleteCount.toString()));
                         });
                     }
                     log.info("任务名称【WorkHomeYStatsWorker】开始执行.此轮需要执行【" + workHomeStats.size() + "】条数据任务");

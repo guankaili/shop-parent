@@ -3,6 +3,7 @@ package com.world.task.sbms.thread;
 import com.world.data.mysql.OneSql;
 import com.world.data.mysql.transaction.TransactionObject;
 import com.world.model.sbms.DataShopScanOutMYFromStats;
+import com.world.util.StringUtil;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.log4j.Logger;
 
@@ -34,57 +35,59 @@ public class DataShopScanOutMYStatsThread extends Thread {
         List<OneSql> sqls = new ArrayList<>();
         TransactionObject txObj = new TransactionObject();
         try {
-            String sql = "INSERT INTO data_scan_out_stats (" +
-                    "dealer_code," +
-                    "dealer_name," +
-                    "dealer_cm_id," +
-                    "large_area_code," +
-                    "large_area_name," +
-                    "`year`," +
-                    "shop_out_quantity_m1," +
-                    "shop_out_quantity_m2," +
-                    "shop_out_quantity_m3," +
-                    "shop_out_quantity_m4," +
-                    "shop_out_quantity_m5," +
-                    "shop_out_quantity_m6," +
-                    "shop_out_quantity_m7," +
-                    "shop_out_quantity_m8," +
-                    "shop_out_quantity_m9," +
-                    "shop_out_quantity_m10," +
-                    "shop_out_quantity_m11," +
-                    "shop_out_quantity_m12," +
-                    "create_date " +
-                    ")" +
-                    "VALUES" +
-                    "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
+            StringBuffer sql = new StringBuffer();
+
+            //用于更新的sql
+            String startSql = "";
+            String endSql = "";
+
+            //基本数据
             List<Object> param = new ArrayList<>();
-            param.add(dataShopScanOutMYFromStats.getDealerCode());
-            param.add(dataShopScanOutMYFromStats.getDealerName());
-            param.add(dataShopScanOutMYFromStats.getDealerCmId());
-            param.add(dataShopScanOutMYFromStats.getLargeAreaCode());
-            param.add(dataShopScanOutMYFromStats.getLargeAreaName());
-            param.add(dataShopScanOutMYFromStats.getScanYear());
-            param.add(dataShopScanOutMYFromStats.getShopOutQuantityM1());
-            param.add(dataShopScanOutMYFromStats.getShopOutQuantityM2());
-            param.add(dataShopScanOutMYFromStats.getShopOutQuantityM3());
-            param.add(dataShopScanOutMYFromStats.getShopOutQuantityM4());
-            param.add(dataShopScanOutMYFromStats.getShopOutQuantityM5());
-            param.add(dataShopScanOutMYFromStats.getShopOutQuantityM6());
-            param.add(dataShopScanOutMYFromStats.getShopOutQuantityM7());
-            param.add(dataShopScanOutMYFromStats.getShopOutQuantityM8());
-            param.add(dataShopScanOutMYFromStats.getShopOutQuantityM9());
-            param.add(dataShopScanOutMYFromStats.getShopOutQuantityM10());
-            param.add(dataShopScanOutMYFromStats.getShopOutQuantityM11());
-            param.add(dataShopScanOutMYFromStats.getShopOutQuantityM12());
-            param.add(DateFormatUtils.format(new Date(),"yyyy-MM-dd HH:mm:ss"));
-            sqls.add(new OneSql(sql, 1, param.toArray(), "sbms_main"));
+
+            //查询是否存在这个 业务员的id
+            List<Object> list = txObj.excuteQuery(new OneSql("SELECT t1.id FROM data_scan_out_stats t1 " +
+                    "WHERE t1.dealer_cm_id = '" + dataShopScanOutMYFromStats.getDealerCmId() + "' and t1.`year` = '"+
+                    dataShopScanOutMYFromStats.getScanYear()+"' ", 1, null, "sbms_main"));
+            //更新操作
+            if (StringUtil.isNotEmpty(list)) {
+                startSql = " UPDATE ";
+                endSql = " WHERE dealer_cm_id = '" + dataShopScanOutMYFromStats.getDealerCmId() + "' ";
+            } else {
+                //插入操作
+                startSql = " INSERT ";
+                endSql = "  ";
+            }
+
+            sql.append(""+startSql+" data_scan_out_stats SET ");
+            if (dataShopScanOutMYFromStats.getDealerCode() != null){param.add(dataShopScanOutMYFromStats.getDealerCode());sql.append(" dealer_code = ?, ");}
+            if (dataShopScanOutMYFromStats.getDealerName() != null){param.add(dataShopScanOutMYFromStats.getDealerName());sql.append(" dealer_name = ?, ");}
+            if (dataShopScanOutMYFromStats.getDealerCmId() != null){param.add(dataShopScanOutMYFromStats.getDealerCmId());sql.append(" dealer_cm_id = ?, ");}
+            if (dataShopScanOutMYFromStats.getLargeAreaCode() != null){param.add(dataShopScanOutMYFromStats.getLargeAreaCode());sql.append(" large_area_code = ?, ");}
+            if (dataShopScanOutMYFromStats.getScanYear() != null){param.add(dataShopScanOutMYFromStats.getScanYear());sql.append(" `year` = ?, ");}
+            if (dataShopScanOutMYFromStats.getShopOutQuantityM1() != null){param.add(dataShopScanOutMYFromStats.getShopOutQuantityM1());sql.append(" shop_out_quantity_m1 = ?, ");}
+            if (dataShopScanOutMYFromStats.getShopOutQuantityM2() != null){param.add(dataShopScanOutMYFromStats.getShopOutQuantityM2());sql.append(" shop_out_quantity_m2 = ?, ");}
+            if (dataShopScanOutMYFromStats.getShopOutQuantityM3() != null){param.add(dataShopScanOutMYFromStats.getShopOutQuantityM3());sql.append(" shop_out_quantity_m3 = ?, ");}
+            if (dataShopScanOutMYFromStats.getShopOutQuantityM4() != null){param.add(dataShopScanOutMYFromStats.getShopOutQuantityM4());sql.append(" shop_out_quantity_m4 = ?, ");}
+            if (dataShopScanOutMYFromStats.getShopOutQuantityM5() != null){param.add(dataShopScanOutMYFromStats.getShopOutQuantityM5());sql.append(" shop_out_quantity_m5 = ?, ");}
+            if (dataShopScanOutMYFromStats.getShopOutQuantityM6() != null){param.add(dataShopScanOutMYFromStats.getShopOutQuantityM6());sql.append(" shop_out_quantity_m6 = ?, ");}
+            if (dataShopScanOutMYFromStats.getShopOutQuantityM7() != null){param.add(dataShopScanOutMYFromStats.getShopOutQuantityM7());sql.append(" shop_out_quantity_m7 = ?, ");}
+            if (dataShopScanOutMYFromStats.getShopOutQuantityM8() != null){param.add(dataShopScanOutMYFromStats.getShopOutQuantityM8());sql.append(" shop_out_quantity_m8 = ?, ");}
+            if (dataShopScanOutMYFromStats.getShopOutQuantityM9() != null){param.add(dataShopScanOutMYFromStats.getShopOutQuantityM9());sql.append(" shop_out_quantity_m9 = ?, ");}
+            if (dataShopScanOutMYFromStats.getShopOutQuantityM10() != null){param.add(dataShopScanOutMYFromStats.getShopOutQuantityM10());sql.append(" shop_out_quantity_m10 = ?, ");}
+            if (dataShopScanOutMYFromStats.getShopOutQuantityM11() != null){param.add(dataShopScanOutMYFromStats.getShopOutQuantityM11());sql.append(" shop_out_quantity_m11 = ?, ");}
+            if (dataShopScanOutMYFromStats.getShopOutQuantityM12() != null){param.add(dataShopScanOutMYFromStats.getShopOutQuantityM12());sql.append(" shop_out_quantity_m12 = ?, ");}
+            sql.append(" create_date = '"+DateFormatUtils.format(new Date(),"yyyy-MM-dd HH:mm:ss")+"' ");
+            sql.append(" "+endSql+" ");
+            sqls.add(new OneSql(sql.toString(), 1, param.toArray(), "sbms_main"));
             txObj.excuteUpdateList(sqls);
             if (txObj.commit()) {
                 logger.info("插入成功");
             } else {
                 logger.error("插入失败");
             }
+
+
 
         } catch (Exception e) {
             logger.error("数据新增失败", e);

@@ -44,6 +44,8 @@ public class DataShopAStatsWorker extends Worker {
                         "t.large_area_code AS largeAreaCode, " +
                         "t.large_area AS largeArea, " +
                         "t.shop_id AS shopId, " +
+                        "t.shop_province_id AS shopProvinceId, " +
+                        "t.shop_Province AS shopProvince, " +
                         "t.brand_code AS brandCode, " +
                         "t.brand_name AS brandName, " +
                         "COUNT( t.shop_status = 5 OR t.shop_status = 6 OR t.shop_status = 7 OR NULL ) AS shopTotalQuantity, " +

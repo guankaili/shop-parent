@@ -31,6 +31,22 @@
           userName: "root",
           pwd: "Godlike_110",
           ip: "172.16.120.88:3306"
-       }
-	]
+       },
+      {
+        db: "qly",
+        jdbcUrl: "jdbc:mysql",
+        driverClassName: "com.mysql.cj.jdbc.Driver",
+        userName: "root",
+        pwd: "Godlike_110",
+        ip: "172.16.120.88:3306"
+      },
+      {
+        db: "sbms_main",
+        jdbcUrl: "jdbc:mysql",
+        driverClassName: "com.mysql.cj.jdbc.Driver",
+        userName: "root",
+        pwd: "Godlike_110",
+        ip: "172.16.120.88:3306"
+      }
+    ]
 }

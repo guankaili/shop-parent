@@ -191,7 +191,7 @@ public class ScanOutShopThread extends Thread {
          * 返利配置：按门店类型和size匹配对应积分分值
          */
         sql = "select * from es_shop_conf_rebate where shop_type = " + shopType + " and size = " + goodsSizeInt + " "
-                + "and start_time <= now() and end_time >= now() ";
+            + "and start_time <= now() and end_time >= now() ";
         log.info("sql = " + sql);
         ShopConfRebateModel shopConfRebateModel = (ShopConfRebateModel) Data.GetOne("shop_member", sql, null, ShopConfRebateModel.class);
         log.info("shopConfRebateModel = " + JSON.toJSONString(shopConfRebateModel));

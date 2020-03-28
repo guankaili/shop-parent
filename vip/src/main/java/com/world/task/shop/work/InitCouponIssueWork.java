@@ -6,6 +6,7 @@ import com.world.data.mysql.Data;
 import com.world.model.dao.task.Worker;
 import com.world.model.shop.GoodsSkuModel;
 import com.world.model.shop.ShopConfIntegralModel;
+import com.world.model.shop.ShopConfRebateModel;
 import com.world.util.GoodsNameSplitUtil;
 
 import java.util.List;
@@ -76,8 +77,50 @@ public class InitCouponIssueWork extends Worker {
              *
              *
              */
-
-
+            //查询配置积分表
+            sql = "select shop_type,score,size from es_shop_conf_integral where size = " + goodsSize;
+            log.info("sql = " + sql);
+            List<Bean> confIntegralList = (List<Bean>) Data.Query("shop_member", sql, null, ShopConfIntegralModel.class);
+            log.info("confIntegralList"+JSON.toJSONString(confIntegralList));
+            if(confIntegralList.size()>0) {
+                for (int j = 0; j < confIntegralList.size(); j++) {
+                    ShopConfIntegralModel confIntegralModel = (ShopConfIntegralModel) confIntegralList.get(j);
+                    log.info("confIntegralModel = " + JSON.toJSONString(confIntegralModel));
+                    Integer shop_type = confIntegralModel.getShop_type();
+                    Integer size = confIntegralModel.getSize();
+                    Integer score = confIntegralModel.getScore();
+                    sql = "INSERT INTO es_coupon_issue " +
+                            "(issue_title, issue_rule, shop_type, goods_size, issue_type, issue_amount," +
+                            "seller_id,seller_name, issue_start_time, issue_end_time, coupon_valid_day, is_usable) " +
+                            "VALUES ('扫码入库后 专享积分'," + skuSn + "," + shop_type + "," + size + ",5," + score + ",1,'森麒麟自营店','2020-03-01','2020-04-30',90,1)";
+                    log.info("insert...sql = " + sql);
+                    Data.Insert("shop_member", sql, null);
+                }
+                //查询返利配置表
+                sql = "select shop_type,score,size from es_shop_conf_rebate where size = " + goodsSize;
+                log.info("sql = " + sql);
+                List<Bean> confRebateList = (List<Bean>) Data.Query("shop_member", sql, null, ShopConfRebateModel.class);
+                log.info("confRebateList = " + JSON.toJSONString(confRebateList));
+                for (int k = 0; k < confRebateList.size(); k++) {
+                    ShopConfRebateModel confRebateModel = (ShopConfRebateModel) confRebateList.get(k);
+                    log.info("confRebateModel = " + JSON.toJSONString(confRebateModel));
+                    Integer shopType = confRebateModel.getShop_type();
+                    Integer size = confRebateModel.getSize();
+                    Integer score = confRebateModel.getScore();
+                    sql = "INSERT INTO es_coupon_issue " +
+                            "(issue_title, issue_rule, shop_type, goods_size, issue_type, issue_amount," +
+                            "seller_id,seller_name, issue_start_time, issue_end_time, coupon_valid_day, is_usable) " +
+                            "VALUES ('扫码入库后 专享返利'," + skuSn + "," + shopType + "," + size + ",6," + score + ",1,'森麒麟自营店','2020-03-01','2020-04-30',90,1)";
+                    log.info("insert...sql = " + sql);
+                    Data.Insert("shop_member", sql, null);
+                }
+                sql = "INSERT INTO es_coupon_issue " +
+                        "(issue_title, issue_rule, goods_size, issue_type, issue_amount," +
+                        "seller_id,seller_name, issue_start_time, issue_end_time, coupon_valid_day, is_usable) " +
+                        "VALUES ('扫码入库后 专享代金券'," + skuSn + "," + goodsSize + ",3,80,1,'森麒麟自营店','2020-03-01','2020-04-30',90,1)";
+                log.info("insert...sql = " + sql);
+                Data.Insert("shop_member", sql, null);
+            }
         }
 
 //        sql = "update es_member_coupon set used_status = 0, bar_code = " + barCode + " where mc_id = " + mcId;

@@ -47,6 +47,22 @@
         userName: "root",
         pwd: "Godlike_110",
         ip: "172.16.120.88:3306"
+      },
+      {
+        db: "weilai_backend",
+        jdbcUrl: "jdbc:mysql",
+        driverClassName: "com.mysql.cj.jdbc.Driver",
+        userName: "root",
+        pwd: "Godlike_110",
+        ip: "172.16.120.88:3306"
+      },
+      {
+        db: "weilai_uaa",
+        jdbcUrl: "jdbc:mysql",
+        driverClassName: "com.mysql.cj.jdbc.Driver",
+        userName: "root",
+        pwd: "Godlike_110",
+        ip: "172.16.120.88:3306"
       }
     ]
 }

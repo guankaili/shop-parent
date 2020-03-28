@@ -77,6 +77,12 @@ public class InitCouponIssueWork extends Worker {
              *
              *
              */
+            if ("".equals(goodsSize)){
+                goodsSize = 0+"";
+            }
+            if (Integer.valueOf(goodsSize) >= 18){
+                goodsSize = 18+"";
+            }
             //查询配置积分表
             sql = "select shop_type,score,size from es_shop_conf_integral where size = " + goodsSize;
             log.info("sql = " + sql);
@@ -92,7 +98,7 @@ public class InitCouponIssueWork extends Worker {
                     sql = "INSERT INTO es_coupon_issue " +
                             "(issue_title, issue_rule, shop_type, goods_size, issue_type, issue_amount," +
                             "seller_id,seller_name, issue_start_time, issue_end_time, coupon_valid_day, is_usable) " +
-                            "VALUES ('扫码入库后 专享积分'," + skuSn + "," + shop_type + "," + size + ",5," + score + ",1,'森麒麟自营店','2020-03-01','2020-04-30',90,1)";
+                            "VALUES ('扫码入库后 专享积分','" + skuSn + "'," + shop_type + "," + size + ",5," + score + ",1,'森麒麟自营店','2020-03-01','2020-04-30',90,1)";
                     log.info("insert...sql = " + sql);
                     Data.Insert("shop_member", sql, null);
                 }
@@ -110,14 +116,14 @@ public class InitCouponIssueWork extends Worker {
                     sql = "INSERT INTO es_coupon_issue " +
                             "(issue_title, issue_rule, shop_type, goods_size, issue_type, issue_amount," +
                             "seller_id,seller_name, issue_start_time, issue_end_time, coupon_valid_day, is_usable) " +
-                            "VALUES ('扫码入库后 专享返利'," + skuSn + "," + shopType + "," + size + ",6," + score + ",1,'森麒麟自营店','2020-03-01','2020-04-30',90,1)";
+                            "VALUES ('扫码入库后 专享返利','" + skuSn + "'," + shopType + "," + size + ",6," + score + ",1,'森麒麟自营店','2020-03-01','2020-04-30',90,1)";
                     log.info("insert...sql = " + sql);
                     Data.Insert("shop_member", sql, null);
                 }
                 sql = "INSERT INTO es_coupon_issue " +
                         "(issue_title, issue_rule, goods_size, issue_type, issue_amount," +
                         "seller_id,seller_name, issue_start_time, issue_end_time, coupon_valid_day, is_usable) " +
-                        "VALUES ('扫码入库后 专享代金券'," + skuSn + "," + goodsSize + ",3,80,1,'森麒麟自营店','2020-03-01','2020-04-30',90,1)";
+                        "VALUES ('扫码入库后 专享代金券','" + skuSn + "'," + goodsSize + ",3,80,1,'森麒麟自营店','2020-03-01','2020-04-30',90,1)";
                 log.info("insert...sql = " + sql);
                 Data.Insert("shop_member", sql, null);
             }

@@ -65,6 +65,7 @@ public class DataRoleRankStatsDealerThread extends Thread {
             if (dataRoleRankStats.getCountryRank() != null){param.add(dataRoleRankStats.getCountryRank());sql.append(" country_rank = ?, ");}
             if (dataRoleRankStats.getShopQuantity() != null){param.add(dataRoleRankStats.getShopQuantity());sql.append(" shop_quantity = ?, ");}
             if (dataRoleRankStats.getUserSign() != null){param.add(dataRoleRankStats.getUserSign());sql.append(" user_sign = ?, ");}
+            if (dataRoleRankStats.getUserSignName() != null){param.add(dataRoleRankStats.getUserSignName());sql.append(" user_sign_name = ?, ");}
             sql.append(" create_date = '"+ DateFormatUtils.format(new Date(),"yyyy-MM-dd HH:mm:ss")+"' ");
             sql.append(" "+endSql+" ");
             sqls.add(new OneSql(sql.toString(), 1, param.toArray(), "sbms_main"));

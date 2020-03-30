@@ -43,10 +43,13 @@ public class DataMainShopMStatsWorker extends Worker {
                         "t.dealer_name AS dealerName," +
                         "t.large_area_code AS largeAreaCode, " +
                         "t.large_area AS largeArea, " +
-                        "COUNT( t.shop_status = 5 OR t.shop_status = 6 OR t.shop_status = 7 OR NULL ) AS shopQuantity, " +
-                        "COUNT( t.shop_status = 6 OR NULL ) AS activeShopQuantity," +
-                        "COUNT( date_format(t.contract_time, '%Y-%m') = DATE_FORMAT(now(), '%Y-%m') OR NULL ) AS addShopQuantity " +
-                        "FROM es_shop_detail t GROUP BY t.dealer_cm_id";
+                        "COUNT( t.id ) AS shopQuantity, " +
+                        "COUNT( t.shop_status = 6  OR NULL) AS activeShopQuantity," +
+                        "COUNT( date_format(t.contract_time, '%Y-%m') = DATE_FORMAT(now(), '%Y-%m')  OR NULL) AS addShopQuantity " +
+                        "FROM es_shop_detail t " +
+                        "WHERE " +
+                        "  (t.shop_status = '5' OR t.shop_status = '6' OR t.shop_status = '7' ) " +
+                        "GROUP BY t.dealer_cm_id";
 
                 List<Bean> beans = Data.Query("shop_member", sqlShop, null, DataMainMStats.class);
                 if (StringUtil.isNotEmpty(beans)) {
@@ -58,11 +61,12 @@ public class DataMainShopMStatsWorker extends Worker {
                         dealerCmId.add(item.getDealerCmId());
                     });
                     //用业务员id--查询扫码表的统计
-                    String sqlScan = " SELECT t.dealer_cm_id AS dealerCmId," +
-                            "COUNT(t.scan_type = 3 AND date_format(t.create_datetime, '%Y-%m') = DATE_FORMAT(now(), '%Y-%m') OR NULL) AS scanInQuantity," +
-                            "COUNT(t.scan_type = 4 AND date_format(t.create_datetime, '%Y-%m') = DATE_FORMAT(now(), '%Y-%m') OR NULL) AS scanOutQuantity," +
-                            "COUNT(DISTINCT t.shop_id OR NULL) AS scanJoinShopQuantity " +
-                            "FROM scan_batch_record_detail t GROUP BY t.dealer_cm_id  ";
+                    String sqlScan = " SELECT t.dealer_cm_id AS dealerCmId, " +
+                            "COUNT(t.scan_type = 3 OR NULL) AS scanInQuantity, " +
+                            "COUNT(t.scan_type = 4 OR NULL) AS scanOutQuantity, " +
+                            "COUNT(DISTINCT t.shop_id ) AS scanJoinShopQuantity " +
+                            "FROM scan_batch_record_detail t " +
+                            "GROUP BY t.dealer_cm_id  ";
                     List<Bean> scans = Data.Query("scan_main", sqlScan, null, DataMainMStats.class);
                     List<DataMainMStats> scanList = ObjectConversion.copy(scans, DataMainMStats.class);
 

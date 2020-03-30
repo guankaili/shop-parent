@@ -30,7 +30,7 @@ public class DataRoleRankStatsAssistRawStats extends Bean implements Serializabl
     /**
      * 角色
      */
-    private String title;
+    private String roleId;
     /**
      * 角色类型  1、森麒麟业务员 2、其它
      */

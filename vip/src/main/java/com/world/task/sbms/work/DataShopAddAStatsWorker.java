@@ -37,25 +37,23 @@ public class DataShopAddAStatsWorker extends Worker {
             try {
                 workFlag = false;
                 //获取当月的新增门店
-                String sqlScanAdd = "SELECT " +
-                        "t.dealer_name AS dealerName, " +
-                        "t.dealer_code AS dealerCode, " +
-                        "t.dealer_cm_id AS dealerCmId, " +
-                        "t.dealer_cm_name AS dealerCmName, " +
-                        "t.large_area_code AS largeAreaCode, " +
-                        "t.large_area AS largeArea, " +
-                        "date_format(t.contract_time,'%Y') AS shopAddYear," +
-                        "date_format(t.contract_time,'%m') AS shopAddMonth, " +
-                        "COUNT( " +
-                        "t.shop_status = 5 " +
-                        "OR t.shop_status = 6 " +
-                        "OR t.shop_status = 7 " +
-                        "AND date_format( t.contract_time, '%Y-%m' ) = DATE_FORMAT( now(), '%Y-%m' ) " +
-                        "OR NULL " +
-                        ") AS shopAddCount " +
+                String sqlScanAdd = " SELECT " +
+                        " t.dealer_name AS dealerName, " +
+                        " t.dealer_code AS dealerCode, " +
+                        " t.dealer_cm_id AS dealerCmId, " +
+                        " t.dealer_cm_name AS dealerCmName, " +
+                        " t.large_area_code AS largeAreaCode, " +
+                        " t.large_area AS largeArea, " +
+                        " date_format( t.contract_time, '%Y' ) AS shopAddYear, " +
+                        " date_format( t.contract_time, '%m' ) AS shopAddMonth,  " +
+                        " COUNT(t.id) AS shopAddCount "+
                         "FROM " +
-                        "es_shop_detail t " +
-                        "GROUP BY t.dealer_cm_id ";
+                        " es_shop_detail t  " +
+                        "WHERE " +
+                        " ( t.shop_status = 5 OR t.shop_status = 6 OR t.shop_status = 7 )  " +
+                        " AND date_format( t.contract_time, '%Y-%m' ) = DATE_FORMAT( now(), '%Y-%m' )  " +
+                        "GROUP BY " +
+                        " t.dealer_cm_id ";
                 List<Bean> beans = Data.Query("shop_member", sqlScanAdd, null, DataShopAddAStats.class);
                 if (StringUtil.isNotEmpty(beans)){
                     List<DataShopAddAStats> scanList = ObjectConversion.copy(beans, DataShopAddAStats.class);

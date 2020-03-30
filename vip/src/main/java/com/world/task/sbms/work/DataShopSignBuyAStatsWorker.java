@@ -50,16 +50,10 @@ public class DataShopSignBuyAStatsWorker extends Worker {
                         " t.shop_status = 6 " +
                         "OR NULL " +
                         ") AS shopBuyCount, " +
-                        "COUNT( " +
-                        "t.shop_status = 5 " +
-                        "OR t.shop_status = 6 " +
-                        "OR t.shop_status = 7 " +
-                        "OR NULL " +
-                        ") AS shopSignCount " +
-                        "" +
+                        "COUNT(t.id) AS shopSignCount " +
                         "FROM " +
                         "es_shop_detail t " +
-                        " WHERE date_format( t.contract_time, '%Y-%m' ) = DATE_FORMAT( now(), '%Y-%m' ) "+
+                        " WHERE date_format( t.contract_time, '%Y-%m' ) = DATE_FORMAT( now(), '%Y-%m' ) AND (t.shop_status = 5 OR t.shop_status = 6 OR t.shop_status = 7 )"+
                         "GROUP BY " +
                         "t.dealer_cm_id ";
                 List<Bean> beans = Data.Query("shop_member", sql, null, DataShopSignBuyAStats.class);

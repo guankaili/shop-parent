@@ -71,7 +71,6 @@ public class DataShopScanAStatsWorker extends Worker {
                         shopList.forEach(item1 -> {
                             item1.setShopJoinInRate("0.00%");
                             inList.forEach(item2 -> {
-                                //获取当前的排名
                                 if (item1.getDealerCmId().equals(item2.getDealerCmId())) {
                                     item1.setShopScanInQuantity(item2.getShopScanInQuantity());
                                     item1.setShopJoinInQuantity(item2.getShopJoinInQuantity());

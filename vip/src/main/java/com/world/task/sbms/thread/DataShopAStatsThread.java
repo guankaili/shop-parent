@@ -67,10 +67,6 @@ public class DataShopAStatsThread extends Thread{
             if (dataShopAStats.getShopPanicQuantity() != null){param.add(dataShopAStats.getShopPanicQuantity());sql.append(" shop_panic_quantity = ?, ");}
             if (dataShopAStats.getShopAddQuantity() != null){param.add(dataShopAStats.getShopAddQuantity());sql.append(" shop_add_quantity = ?, ");}
             if (dataShopAStats.getShopAddPanicQuantity() != null){param.add(dataShopAStats.getShopAddPanicQuantity());sql.append(" shop_add_panic_quantity = ?, ");}
-            if (dataShopAStats.getAreaRank() != null){param.add(dataShopAStats.getAreaRank());sql.append(" area_rank = ?, ");}
-            if (dataShopAStats.getAreaQuantity() != null){param.add(dataShopAStats.getAreaQuantity());sql.append(" area_quantity = ?, ");}
-            if (dataShopAStats.getCountryRank() != null){param.add(dataShopAStats.getCountryRank());sql.append(" country_rank = ?, ");}
-            if (dataShopAStats.getCountryQuantity() != null){param.add(dataShopAStats.getCountryQuantity());sql.append(" country_quantity = ?, ");}
             param.add(dataShopAStats.getCtsARate());sql.append(" cts_a_rate = ?, ");
             param.add(dataShopAStats.getCtsRate());sql.append(" cts_rate = ?, ");
             param.add(dataShopAStats.getCcsARate());sql.append(" ccs_a_rate = ?, ");

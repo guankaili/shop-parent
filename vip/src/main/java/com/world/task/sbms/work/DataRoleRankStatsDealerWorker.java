@@ -3,10 +3,12 @@ package com.world.task.sbms.work;
 import com.world.data.mysql.Bean;
 import com.world.data.mysql.Data;
 import com.world.model.dao.task.Worker;
+import com.world.model.sbms.DataMainMStats;
 import com.world.model.sbms.DataRoleRankStats;
 import com.world.task.sbms.thread.DataRoleRankStatsDealerThread;
 import com.world.util.ObjectConversion;
 import com.world.util.StringUtil;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -46,8 +48,20 @@ public class DataRoleRankStatsDealerWorker extends Worker {
                 List<Bean> beans = Data.Query("shop_member", dealerSql, null, DataRoleRankStats.class);
                 if (StringUtil.isNotEmpty(beans)){
                     List<DataRoleRankStats> dataRoleRankStatsList = ObjectConversion.copy(beans, DataRoleRankStats.class);
-                    //对查询出的数据进行储存
 
+                    //查询经销商name
+                    String dealerNameSql = " SELECT t.dealer_code AS userSign,t.dealer_name AS userSignName FROM t_dealer_info t ";
+                    List<Bean> nameBeans = Data.Query("qly", dealerNameSql, null, DataRoleRankStats.class);
+                    if (StringUtil.isNotEmpty(nameBeans)){
+                            List<DataRoleRankStats> names = ObjectConversion.copy(nameBeans, DataRoleRankStats.class);
+                            dataRoleRankStatsList.forEach(item1 -> {
+                                names.forEach(item2 -> {
+                                    if (item1.getUserSign().equals(item2.getUserSign())) {
+                                        item1.setUserSignName(item2.getUserSignName());
+                                    }
+                                });
+                            });
+                    }
                     //构建线程池
                     //当提交的任务数量为1000的时候，会开辟20个线程数
                     ExecutorService executorService = Executors.newFixedThreadPool(10);

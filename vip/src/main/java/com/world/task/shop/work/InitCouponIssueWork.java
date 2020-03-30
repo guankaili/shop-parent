@@ -9,6 +9,7 @@ import com.world.model.shop.ShopConfIntegralModel;
 import com.world.model.shop.ShopConfRebateModel;
 import com.world.util.GoodsNameSplitUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -80,6 +81,55 @@ public class InitCouponIssueWork extends Worker {
             if ("".equals(goodsSize)){
                 goodsSize = 0+"";
             }
+            Integer num = 0;
+            switch(Integer.parseInt(goodsSize)){
+                case 13:
+                    num = 15;
+                    break;
+                case 14:
+                    num = 20;
+                    break;
+                case 15:
+                    num = 25;
+                    break;
+                case 16:
+                    num = 40;
+                    break;
+                case 17:
+                    num = 80;
+                    break;
+                case 18:
+                    num = 100;
+                    break;
+                case 19:
+                    num = 100;
+                    break;
+                case 20:
+                    num = 150;
+                    break;
+                case 21:
+                    num = 200;
+                    break;
+                case 22:
+                    num = 200;
+                    break;
+                case 24:
+                    num = 200;
+                    break;
+                case 26:
+                    num = 200;
+                    break;
+                default:
+                    num = 200;
+            }
+            if (Integer.parseInt(goodsSize) != 0 ) {
+                sql = "INSERT INTO es_coupon_issue " +
+                        "(issue_title, issue_rule, goods_size, issue_type, issue_amount," +
+                        "seller_id,seller_name, issue_start_time, issue_end_time, coupon_valid_day, is_usable) " +
+                        "VALUES ('扫码入库后 专享代金券','" + skuSn + "'," + goodsSize + ",3,"+num+",1,'森麒麟自营店','2020-03-01','2020-04-30',90,1)";
+                log.info("insert...sql = " + sql);
+                Data.Insert("shop_member", sql, null);
+            }
             if (Integer.valueOf(goodsSize) >= 18){
                 goodsSize = 18+"";
             }
@@ -120,12 +170,7 @@ public class InitCouponIssueWork extends Worker {
                     log.info("insert...sql = " + sql);
                     Data.Insert("shop_member", sql, null);
                 }
-                sql = "INSERT INTO es_coupon_issue " +
-                        "(issue_title, issue_rule, goods_size, issue_type, issue_amount," +
-                        "seller_id,seller_name, issue_start_time, issue_end_time, coupon_valid_day, is_usable) " +
-                        "VALUES ('扫码入库后 专享代金券','" + skuSn + "'," + goodsSize + ",3,80,1,'森麒麟自营店','2020-03-01','2020-04-30',90,1)";
-                log.info("insert...sql = " + sql);
-                Data.Insert("shop_member", sql, null);
+
             }
         }
 

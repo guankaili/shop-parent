@@ -10,10 +10,8 @@ import com.world.task.sbms.thread.DataShopScanInMYStatsThread;
 import com.world.util.ObjectConversion;
 import com.world.util.StringUtil;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -58,7 +56,7 @@ public class DataShopScanInMYStatsWorker extends Worker {
                     List<DataShopScanInMYFromStats> list = fromData(scanList);
 
                     //一次性获取中间表所有数据，判断新增或更新
-                    Map<String,String> map = new HashMap<>();
+                    Map<String,String> map = new ConcurrentHashMap<String, String>();
                     String ifSql = " SELECT t1.dealer_cm_id AS dealerCmId,t1.`year` AS `year` FROM data_scan_in_stats t1  ";
                     List<Bean> dealerCmIdStatuses = Data.Query("sbms_main", ifSql, null, DataDealerCmIdStatus.class);
                     if (StringUtil.isNotEmpty(dealerCmIdStatuses)){

@@ -7,10 +7,9 @@ import com.world.model.sbms.*;
 import com.world.task.sbms.thread.DataShopAStatsThread;
 import com.world.util.ObjectConversion;
 import com.world.util.StringUtil;
-
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -73,7 +72,7 @@ public class DataShopAStatsWorker extends Worker {
                     List<DataShopAStats> ShopBaseR = ObjectConversion.copy(shopBeans, DataShopAStats.class);
 
                     //一次性获取中间表所有数据，判断新增或更新
-                    Map<String,String> map = new HashMap<>();
+                    Map<String,String> map = new ConcurrentHashMap<String, String>();
                     String ifSql = " SELECT t1.dealer_cm_id AS dealerCmId FROM data_shop_detail_stats t1  ";
                     List<Bean> dealerCmIdStatuses = Data.Query("sbms_main", ifSql, null, DataDealerCmIdStatus.class);
                     if (StringUtil.isNotEmpty(dealerCmIdStatuses)){

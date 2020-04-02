@@ -4,16 +4,14 @@ import com.world.data.mysql.Bean;
 import com.world.data.mysql.Data;
 import com.world.model.dao.task.Worker;
 import com.world.model.sbms.DataDealerCmIdStatus;
-import com.world.model.sbms.DataMainMStats;
 import com.world.model.sbms.DataRoleRankStats;
 import com.world.task.sbms.thread.DataRoleRankStatsDealerThread;
 import com.world.util.ObjectConversion;
 import com.world.util.StringUtil;
-import org.springframework.util.CollectionUtils;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -68,7 +66,7 @@ public class DataRoleRankStatsDealerWorker extends Worker {
                     }
 
                     //一次性获取中间表所有数据，判断新增或更新
-                    Map<String,String> map = new HashMap<>();
+                    Map<String,String> map = new ConcurrentHashMap<String, String>();
                     String ifSql = " SELECT t1.user_sign AS userSign FROM data_role_rank_stats t1  ";
                     List<Bean> dealerCmIdStatuses = Data.Query("sbms_main", ifSql, null, DataDealerCmIdStatus.class);
                     if (StringUtil.isNotEmpty(dealerCmIdStatuses)){

@@ -9,10 +9,13 @@ import com.world.util.ObjectConversion;
 import com.world.util.StringUtil;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 /**
  * TODO
@@ -59,13 +62,22 @@ public class DataShopAddAStatsWorker extends Worker {
                     List<DataShopAddAStats> scanList = ObjectConversion.copy(beans, DataShopAddAStats.class);
                     List<DataShopAddAFromStats> list = fromData(scanList);
 
+                    //一次性获取中间表所有数据，判断新增或更新
+                    Map<String,String> map = new HashMap<>();
+                    String ifSql = " SELECT t1.dealer_cm_id AS dealerCmId,t1.`year` AS `year` FROM data_shop_add_stats t1   ";
+                    List<Bean> dealerCmIdStatuses = Data.Query("sbms_main", ifSql, null, DataDealerCmIdStatus.class);
+                    if (StringUtil.isNotEmpty(dealerCmIdStatuses)){
+                        List<DataDealerCmIdStatus> paList = ObjectConversion.copy(dealerCmIdStatuses, DataDealerCmIdStatus.class);
+                        map = paList.stream().collect(Collectors.toMap(k->k.getDealerCmId()+k.getYear(),k->k.getDealerCmId()));
+                    }
+
                     //构建线程池
                     //当提交的任务数量为1000的时候，会开辟20个线程数
                     ExecutorService executorService = Executors.newFixedThreadPool(10);
                     CountDownLatch countDownLatch = new CountDownLatch(list.size());
                     for(DataShopAddAFromStats dataShopAddAFromStats : list){
                         //业务处理线程
-                        DataShopAddAStatsThread dataShopAddAStatsThread = new DataShopAddAStatsThread(dataShopAddAFromStats,countDownLatch);
+                        DataShopAddAStatsThread dataShopAddAStatsThread = new DataShopAddAStatsThread(dataShopAddAFromStats,countDownLatch,map);
                         executorService.submit(dataShopAddAStatsThread);
                     }
                     countDownLatch.await();

@@ -3,6 +3,7 @@ package com.world.task.sbms.work;
 import com.world.data.mysql.Bean;
 import com.world.data.mysql.Data;
 import com.world.model.dao.task.Worker;
+import com.world.model.sbms.DataDealerCmIdStatus;
 import com.world.model.sbms.DataShopScanAStats;
 import com.world.task.sbms.thread.DataShopScanAStatsThread;
 import com.world.util.ObjectConversion;
@@ -11,10 +12,13 @@ import com.world.util.StringUtil;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 /**
  * TODO
@@ -107,13 +111,23 @@ public class DataShopScanAStatsWorker extends Worker {
                             });
                         }
                     }
+
+                    //一次性获取中间表所有数据，判断新增或更新
+                    Map<String,String> map = new HashMap<>();
+                    String ifSql = " SELECT t1.dealer_cm_id AS dealerCmId FROM data_scan_home_stats t1   ";
+                    List<Bean> dealerCmIdStatuses = Data.Query("sbms_main", ifSql, null, DataDealerCmIdStatus.class);
+                    if (StringUtil.isNotEmpty(dealerCmIdStatuses)){
+                        List<DataDealerCmIdStatus> paList = ObjectConversion.copy(dealerCmIdStatuses, DataDealerCmIdStatus.class);
+                        map = paList.stream().collect(Collectors.toMap(DataDealerCmIdStatus::getDealerCmId,DataDealerCmIdStatus::getDealerCmId));
+                    }
+
                     //构建线程池
                     //当提交的任务数量为1000的时候，会开辟20个线程数
                     ExecutorService executorService = Executors.newFixedThreadPool(10);
                     CountDownLatch countDownLatch = new CountDownLatch(shopList.size());
                     for (DataShopScanAStats dataShopScanAStats : shopList) {
                         //业务处理线程
-                        DataShopScanAStatsThread dataShopScanAStatsThread = new DataShopScanAStatsThread(dataShopScanAStats, countDownLatch);
+                        DataShopScanAStatsThread dataShopScanAStatsThread = new DataShopScanAStatsThread(dataShopScanAStats, countDownLatch,map);
                         executorService.submit(dataShopScanAStatsThread);
                     }
                     countDownLatch.await();

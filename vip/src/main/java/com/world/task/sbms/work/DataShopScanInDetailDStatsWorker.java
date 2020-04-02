@@ -3,7 +3,7 @@ package com.world.task.sbms.work;
 import com.world.data.mysql.Bean;
 import com.world.data.mysql.Data;
 import com.world.model.dao.task.Worker;
-import com.world.model.sbms.DataIntegerModel;
+import com.world.model.sbms.DataDealerCmIdStatus;
 import com.world.model.sbms.DataShopScanInDetailDStats;
 import com.world.task.sbms.thread.DataShopScanInDetailDStatsThread;
 import com.world.util.ObjectConversion;
@@ -11,10 +11,13 @@ import com.world.util.SqlUtil;
 import com.world.util.StringUtil;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 /**
  * TODO
@@ -47,7 +50,8 @@ public class DataShopScanInDetailDStatsWorker extends Worker {
                         "t.dealer_cm_id AS dealerCmId, " +
                         "t.dealer_cm_name AS dealerCmName, " +
                         "COUNT( t.id ) AS shopInQuantity, " +
-                        "COUNT( DISTINCT t.shop_id ) AS shopJoinInQuantity " +
+                        "COUNT( DISTINCT t.shop_id ) AS shopJoinInQuantity, " +
+                        "date_format(t.create_datetime,'%Y-%m-%d') AS shopScanInDetailDate "+
                         "FROM " +
                         "scan_batch_record_detail t " +
                         "WHERE " +
@@ -108,12 +112,22 @@ public class DataShopScanInDetailDStatsWorker extends Worker {
                             });
                         });
                     }
+
+                    //一次性获取中间表所有数据，判断新增或更新
+                    Map<String,String> map = new HashMap<>();
+                    String ifSql = " SELECT t1.dealer_cm_id AS dealerCmId,date_format(now(),'%Y-%m-%d') AS thisDate FROM data_scan_in_detail_stats t1 ";
+                    List<Bean> dealerCmIdStatuses = Data.Query("sbms_main", ifSql, null, DataDealerCmIdStatus.class);
+                    if (StringUtil.isNotEmpty(dealerCmIdStatuses)){
+                        List<DataDealerCmIdStatus> paList = ObjectConversion.copy(dealerCmIdStatuses, DataDealerCmIdStatus.class);
+                        map = paList.stream().collect(Collectors.toMap(k->k.getDealerCmId()+k.getThisDate(),k->k.getDealerCmId()));
+                    }
+
                     ExecutorService executorService = Executors.newFixedThreadPool(10);
                     CountDownLatch countDownLatch = new CountDownLatch(inDetailDStats.size());
                     //灌数据
                     for (DataShopScanInDetailDStats dataShopScanInDetailDStats : inDetailDStats) {
                         //业务处理线程
-                        DataShopScanInDetailDStatsThread dataShopScanInDetailDStatsThread = new DataShopScanInDetailDStatsThread(dataShopScanInDetailDStats, countDownLatch);
+                        DataShopScanInDetailDStatsThread dataShopScanInDetailDStatsThread = new DataShopScanInDetailDStatsThread(dataShopScanInDetailDStats, countDownLatch,map);
                         executorService.submit(dataShopScanInDetailDStatsThread);
                     }
                     countDownLatch.await();

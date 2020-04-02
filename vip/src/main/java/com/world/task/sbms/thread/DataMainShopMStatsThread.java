@@ -2,6 +2,7 @@ package com.world.task.sbms.thread;
 
 import com.world.data.mysql.OneSql;
 import com.world.data.mysql.transaction.TransactionObject;
+import com.world.model.sbms.DataDealerCmIdStatus;
 import com.world.model.sbms.DataMainMStats;
 import com.world.util.StringUtil;
 import org.apache.commons.lang.time.DateFormatUtils;
@@ -9,6 +10,7 @@ import org.apache.log4j.Logger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -22,10 +24,12 @@ public class DataMainShopMStatsThread extends Thread {
     private static Logger logger = Logger.getLogger(DataMainShopMStatsThread.class);
     private DataMainMStats dataMainMStats;
     private CountDownLatch countDownLatch;
+    private Map<String,String> map;
 
-    public DataMainShopMStatsThread(DataMainMStats dataMainMStats, CountDownLatch countDownLatch) {
+    public DataMainShopMStatsThread(DataMainMStats dataMainMStats, CountDownLatch countDownLatch, Map<String,String> map) {
         this.dataMainMStats = dataMainMStats;
         this.countDownLatch = countDownLatch;
+        this.map = map;
     }
 
     @Override
@@ -42,11 +46,8 @@ public class DataMainShopMStatsThread extends Thread {
             //基本数据
             List<Object> param = new ArrayList<>();
 
-            //查询是否存在这个 业务员的id
-            List<Object> list = txObj.excuteQuery(new OneSql("SELECT t1.id FROM data_home_shop_stats t1 " +
-                    "WHERE t1.dealer_cm_id = '" + dataMainMStats.getDealerCmId() + "' ", 1, null, "sbms_main"));
             //更新操作
-            if (StringUtil.isNotEmpty(list)) {
+            if (map.containsKey(dataMainMStats.getDealerCmId())) {
                 startSql = " UPDATE ";
                 endSql = " WHERE dealer_cm_id = '" + dataMainMStats.getDealerCmId() + "' ";
             } else {

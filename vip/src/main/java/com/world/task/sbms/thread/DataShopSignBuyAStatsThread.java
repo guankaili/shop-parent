@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -24,11 +25,13 @@ public class DataShopSignBuyAStatsThread extends Thread {
     private static Logger logger = Logger.getLogger(DataShopAddAStatsThread.class);
     private DataShopSignBuyAFromStats dataShopSignBuyAFromStats;
     private CountDownLatch countDownLatch;
+    private Map<String,String> map;
 
     //传入加工后的实体
-    public DataShopSignBuyAStatsThread(DataShopSignBuyAFromStats dataShopSignBuyAFromStats, CountDownLatch countDownLatch) {
+    public DataShopSignBuyAStatsThread(DataShopSignBuyAFromStats dataShopSignBuyAFromStats, CountDownLatch countDownLatch, Map<String,String> map) {
         this.dataShopSignBuyAFromStats = dataShopSignBuyAFromStats;
         this.countDownLatch = countDownLatch;
+        this.map=map;
     }
 
     @Override
@@ -46,11 +49,8 @@ public class DataShopSignBuyAStatsThread extends Thread {
             //基本数据
             List<Object> param = new ArrayList<>();
 
-            //查询是否存在这个 业务员的id
-            List<Object> list = txObj.excuteQuery(new OneSql("SELECT t1.id FROM data_shop_signbuy_stats t1 " +
-                    "WHERE t1.dealer_cm_id = '" + dataShopSignBuyAFromStats.getDealerCmId() + "' and t1.`year` = '"+dataShopSignBuyAFromStats.getShopSignBuyYear()+"' ", 1, null, "sbms_main"));
             //更新操作
-            if (StringUtil.isNotEmpty(list)) {
+            if (map.containsKey(dataShopSignBuyAFromStats.getDealerCmId()+dataShopSignBuyAFromStats.getShopSignBuyYear())) {
                 startSql = " UPDATE ";
                 endSql = " WHERE dealer_cm_id = '" + dataShopSignBuyAFromStats.getDealerCmId() + "' AND `year` = '"+dataShopSignBuyAFromStats.getShopSignBuyYear()+"'";
             } else {

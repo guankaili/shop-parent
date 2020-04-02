@@ -3,16 +3,20 @@ package com.world.task.sbms.work;
 import com.world.data.mysql.Bean;
 import com.world.data.mysql.Data;
 import com.world.model.dao.task.Worker;
+import com.world.model.sbms.DataDealerCmIdStatus;
 import com.world.model.sbms.DataRoleRankStats;
 import com.world.task.sbms.thread.DataRoleRankStatsDealerThread;
 import com.world.task.sbms.thread.DataRoleRankStatsSalesThread;
 import com.world.util.ObjectConversion;
 import com.world.util.StringUtil;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 /**
  * TODO
@@ -61,7 +65,15 @@ public class DataRoleRankStatsSalesWorker extends Worker {
                 List<Bean> beans = Data.Query("sbms_main", dealerSql, null, DataRoleRankStats.class);
                 if (StringUtil.isNotEmpty(beans)){
                     List<DataRoleRankStats> dataRoleRankStatsList = ObjectConversion.copy(beans, DataRoleRankStats.class);
-                    //对查询出的数据进行储存
+
+                    //一次性获取中间表所有数据，判断新增或更新
+                    Map<String,String> map = new HashMap<>();
+                    String ifSql = " SELECT t1.user_sign AS userSign FROM data_role_rank_stats t1  ";
+                    List<Bean> dealerCmIdStatuses = Data.Query("sbms_main", ifSql, null, DataDealerCmIdStatus.class);
+                    if (StringUtil.isNotEmpty(dealerCmIdStatuses)){
+                        List<DataDealerCmIdStatus> list = ObjectConversion.copy(dealerCmIdStatuses, DataDealerCmIdStatus.class);
+                        map = list.stream().collect(Collectors.toMap(DataDealerCmIdStatus::getUserSign,DataDealerCmIdStatus::getUserSign));
+                    }
 
                     //构建线程池
                     //当提交的任务数量为1000的时候，会开辟20个线程数
@@ -69,7 +81,7 @@ public class DataRoleRankStatsSalesWorker extends Worker {
                     CountDownLatch countDownLatch = new CountDownLatch(dataRoleRankStatsList.size());
                     for(DataRoleRankStats data : dataRoleRankStatsList){
                         //业务处理线程
-                        DataRoleRankStatsSalesThread dataRoleRankStatsSalesThread = new DataRoleRankStatsSalesThread(data,countDownLatch,beans.size());
+                        DataRoleRankStatsSalesThread dataRoleRankStatsSalesThread = new DataRoleRankStatsSalesThread(data,countDownLatch,beans.size(),map);
                         executorService.submit(dataRoleRankStatsSalesThread);
                     }
                     countDownLatch.await();

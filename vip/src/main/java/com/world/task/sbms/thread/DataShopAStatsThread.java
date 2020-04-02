@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -23,10 +24,12 @@ public class DataShopAStatsThread extends Thread{
     private static Logger logger = Logger.getLogger(DataShopAStatsThread.class);
     private DataShopAStats dataShopAStats;
     private CountDownLatch countDownLatch;
+    private Map<String,String> map;
 
-    public DataShopAStatsThread(DataShopAStats dataShopAStats, CountDownLatch countDownLatch) {
+    public DataShopAStatsThread(DataShopAStats dataShopAStats, CountDownLatch countDownLatch, Map<String,String> map) {
         this.dataShopAStats = dataShopAStats;
         this.countDownLatch = countDownLatch;
+        this.map = map;
     }
 
     @Override
@@ -43,11 +46,8 @@ public class DataShopAStatsThread extends Thread{
             //基本数据
             List<Object> param = new ArrayList<>();
 
-            //查询是否存在这个 业务员的id
-            List<Object> list = txObj.excuteQuery(new OneSql("SELECT t1.id FROM data_shop_detail_stats t1 " +
-                    "WHERE t1.dealer_cm_id = '" + dataShopAStats.getDealerCmId() + "' ", 1, null, "sbms_main"));
             //更新操作
-            if (StringUtil.isNotEmpty(list)) {
+            if (map.containsKey(dataShopAStats.getDealerCmId())) {
                 startSql = " UPDATE ";
                 endSql = " WHERE dealer_cm_id = '" + dataShopAStats.getDealerCmId() + "' ";
             } else {

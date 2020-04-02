@@ -3,16 +3,19 @@ package com.world.task.sbms.work;
 import com.world.data.mysql.Bean;
 import com.world.data.mysql.Data;
 import com.world.model.dao.task.Worker;
-import com.world.model.sbms.DataRoleRankStats;
+import com.world.model.sbms.DataDealerCmIdStatus;
 import com.world.model.sbms.DataRoleRankStatsAssistRawStats;
 import com.world.task.sbms.thread.DataRoleRankStatsAssistStatsThread;
 import com.world.util.ObjectConversion;
 import com.world.util.StringUtil;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 /**
  * TODO
@@ -64,17 +67,26 @@ public class DataRoleRankStatsAssistWorker extends Worker {
                                             item1.setRoleType(3);
                                         }
 
+                                        //一次性获取中间表所有数据，判断新增或更新
+                                        Map<String,String> map = new HashMap<>();
+                                        String ifSql = " SELECT t1.user_id AS userId,dealer_code AS dealerCode FROM data_role_rank_assist_stats t1 ";
+                                        List<Bean> dealerCmIdStatuses = Data.Query("sbms_main", ifSql, null, DataDealerCmIdStatus.class);
+                                        if (StringUtil.isNotEmpty(dealerCmIdStatuses)){
+                                            List<DataDealerCmIdStatus> list = ObjectConversion.copy(dealerCmIdStatuses, DataDealerCmIdStatus.class);
+                                            map = list.stream().collect(Collectors.toMap(k->k.getUserId()+k.getDealerCode(),k->k.getDealerCode()));
+                                        }
+
                                         //构建线程池
                                         //当提交的任务数量为1000的时候，会开辟20个线程数
-
                                         ExecutorService executorService = Executors.newFixedThreadPool(10);
                                         CountDownLatch countDownLatch = new CountDownLatch(uaas.size());
 
                                         //业务处理线程
                                         for (DataRoleRankStatsAssistRawStats data : uaas) {
-                                            DataRoleRankStatsAssistStatsThread dataRoleRankStatsAssistStatsThread = new DataRoleRankStatsAssistStatsThread(data, countDownLatch);
+                                            DataRoleRankStatsAssistStatsThread dataRoleRankStatsAssistStatsThread = new DataRoleRankStatsAssistStatsThread(data, countDownLatch,map);
                                             executorService.submit(dataRoleRankStatsAssistStatsThread);
                                         }
+
                                         try {
                                             countDownLatch.await();
                                         } catch (InterruptedException e) {
@@ -82,13 +94,13 @@ public class DataRoleRankStatsAssistWorker extends Worker {
                                         }
                                         /*关闭线程池*/
                                         executorService.shutdown();
-
                                     }
                                 });
                             });
                         }
                     }
                 }
+
             } catch (Exception e) {
                 log.error("获取排名信息:辅助获取开始", e);
             } finally {

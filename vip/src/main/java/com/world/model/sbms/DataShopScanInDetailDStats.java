@@ -72,6 +72,6 @@ public class DataShopScanInDetailDStats extends Bean implements Serializable {
     /**
      * 记录日期
      */
-    private Date shopScanInDetailDate;
+    private String shopScanInDetailDate;
 
 }

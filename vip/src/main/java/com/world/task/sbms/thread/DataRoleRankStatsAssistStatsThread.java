@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -24,10 +25,12 @@ public class DataRoleRankStatsAssistStatsThread extends Thread {
     private static Logger logger = Logger.getLogger(DataRoleRankStatsAssistStatsThread.class);
     private DataRoleRankStatsAssistRawStats dataRoleRankStatsAssistRawStats;
     private CountDownLatch countDownLatch;
+    Map<String,String> map;
 
-    public DataRoleRankStatsAssistStatsThread(DataRoleRankStatsAssistRawStats dataRoleRankStatsAssistRawStats, CountDownLatch countDownLatch) {
+    public DataRoleRankStatsAssistStatsThread(DataRoleRankStatsAssistRawStats dataRoleRankStatsAssistRawStats, CountDownLatch countDownLatch, Map<String,String> map) {
         this.dataRoleRankStatsAssistRawStats = dataRoleRankStatsAssistRawStats;
         this.countDownLatch = countDownLatch;
+        this.map = map;
     }
 
     @Override
@@ -44,11 +47,8 @@ public class DataRoleRankStatsAssistStatsThread extends Thread {
             //基本数据
             List<Object> param = new ArrayList<>();
 
-            //查询是否存在这个 业务员的id
-            List<Object> list = txObj.excuteQuery(new OneSql("SELECT t1.id FROM data_role_rank_assist_stats t1 " +
-                    "WHERE t1.user_id = '"+ dataRoleRankStatsAssistRawStats.getUserId()+"' AND t1.dealer_code = '"+dataRoleRankStatsAssistRawStats.getDealerCode()+"' ", 1, null, "sbms_main"));
             //更新操作
-            if (StringUtil.isNotEmpty(list)) {
+            if (map.containsKey(dataRoleRankStatsAssistRawStats.getUserId()+dataRoleRankStatsAssistRawStats.getDealerCode())) {
                 startSql = " UPDATE ";
                 endSql = " WHERE user_id = '" + dataRoleRankStatsAssistRawStats.getUserId() + "' and dealer_code = '"+dataRoleRankStatsAssistRawStats.getDealerCode()+"' ";
             } else {

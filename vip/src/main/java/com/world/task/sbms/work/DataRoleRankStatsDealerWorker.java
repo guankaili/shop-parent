@@ -3,15 +3,19 @@ package com.world.task.sbms.work;
 import com.world.data.mysql.Bean;
 import com.world.data.mysql.Data;
 import com.world.model.dao.task.Worker;
+import com.world.model.sbms.DataDealerCmIdStatus;
 import com.world.model.sbms.DataRoleRankStats;
 import com.world.task.sbms.thread.DataRoleRankStatsDealerThread;
 import com.world.util.ObjectConversion;
 import com.world.util.StringUtil;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 /**
  * TODO
@@ -46,7 +50,29 @@ public class DataRoleRankStatsDealerWorker extends Worker {
                 List<Bean> beans = Data.Query("shop_member", dealerSql, null, DataRoleRankStats.class);
                 if (StringUtil.isNotEmpty(beans)){
                     List<DataRoleRankStats> dataRoleRankStatsList = ObjectConversion.copy(beans, DataRoleRankStats.class);
-                    //对查询出的数据进行储存
+
+                    //查询经销商name
+                    String dealerNameSql = " SELECT t.dealer_code AS userSign,t.dealer_name AS userSignName FROM t_dealer_info t ";
+                    List<Bean> nameBeans = Data.Query("qly", dealerNameSql, null, DataRoleRankStats.class);
+                    if (StringUtil.isNotEmpty(nameBeans)){
+                            List<DataRoleRankStats> names = ObjectConversion.copy(nameBeans, DataRoleRankStats.class);
+                            dataRoleRankStatsList.forEach(item1 -> {
+                                names.forEach(item2 -> {
+                                    if (item1.getUserSign().equals(item2.getUserSign())) {
+                                        item1.setUserSignName(item2.getUserSignName());
+                                    }
+                                });
+                            });
+                    }
+
+                    //一次性获取中间表所有数据，判断新增或更新
+                    Map<String,String> map = new ConcurrentHashMap<String, String>();
+                    String ifSql = " SELECT t1.user_sign AS userSign FROM data_role_rank_stats t1  ";
+                    List<Bean> dealerCmIdStatuses = Data.Query("sbms_main", ifSql, null, DataDealerCmIdStatus.class);
+                    if (StringUtil.isNotEmpty(dealerCmIdStatuses)){
+                        List<DataDealerCmIdStatus> list = ObjectConversion.copy(dealerCmIdStatuses, DataDealerCmIdStatus.class);
+                        map = list.stream().collect(Collectors.toMap(DataDealerCmIdStatus::getUserSign,DataDealerCmIdStatus::getUserSign));
+                    }
 
                     //构建线程池
                     //当提交的任务数量为1000的时候，会开辟20个线程数
@@ -54,7 +80,7 @@ public class DataRoleRankStatsDealerWorker extends Worker {
                     CountDownLatch countDownLatch = new CountDownLatch(dataRoleRankStatsList.size());
                     for(DataRoleRankStats data : dataRoleRankStatsList){
                         //业务处理线程
-                        DataRoleRankStatsDealerThread dataRoleRankStatsDealerThread = new DataRoleRankStatsDealerThread(data,countDownLatch,beans.size());
+                        DataRoleRankStatsDealerThread dataRoleRankStatsDealerThread = new DataRoleRankStatsDealerThread(data,countDownLatch,beans.size(),map);
                         executorService.submit(dataRoleRankStatsDealerThread);
                     }
                     countDownLatch.await();

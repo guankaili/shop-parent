@@ -8,11 +8,12 @@ import com.world.task.sbms.thread.DataShopAddAStatsThread;
 import com.world.util.ObjectConversion;
 import com.world.util.StringUtil;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 /**
  * TODO
@@ -37,29 +38,36 @@ public class DataShopAddAStatsWorker extends Worker {
             try {
                 workFlag = false;
                 //获取当月的新增门店
-                String sqlScanAdd = "SELECT " +
-                        "t.dealer_name AS dealerName, " +
-                        "t.dealer_code AS dealerCode, " +
-                        "t.dealer_cm_id AS dealerCmId, " +
-                        "t.dealer_cm_name AS dealerCmName, " +
-                        "t.large_area_code AS largeAreaCode, " +
-                        "t.large_area AS largeArea, " +
-                        "date_format(t.contract_time,'%Y') AS shopAddYear," +
-                        "date_format(t.contract_time,'%m') AS shopAddMonth, " +
-                        "COUNT( " +
-                        "t.shop_status = 5 " +
-                        "OR t.shop_status = 6 " +
-                        "OR t.shop_status = 7 " +
-                        "AND date_format( t.contract_time, '%Y-%m' ) = DATE_FORMAT( now(), '%Y-%m' ) " +
-                        "OR NULL " +
-                        ") AS shopAddCount " +
+                String sqlScanAdd = " SELECT " +
+                        " t.dealer_name AS dealerName, " +
+                        " t.dealer_code AS dealerCode, " +
+                        " t.dealer_cm_id AS dealerCmId, " +
+                        " t.dealer_cm_name AS dealerCmName, " +
+                        " t.large_area_code AS largeAreaCode, " +
+                        " t.large_area AS largeArea, " +
+                        " date_format( t.contract_time, '%Y' ) AS shopAddYear, " +
+                        " date_format( t.contract_time, '%m' ) AS shopAddMonth,  " +
+                        " COUNT(t.id) AS shopAddCount "+
                         "FROM " +
-                        "es_shop_detail t " +
-                        "GROUP BY t.dealer_cm_id ";
+                        " es_shop_detail t  " +
+                        "WHERE " +
+                        " ( t.shop_status = 5 OR t.shop_status = 6 OR t.shop_status = 7 )  " +
+                        " AND date_format( t.contract_time, '%Y-%m' ) = DATE_FORMAT( now(), '%Y-%m' )  " +
+                        "GROUP BY " +
+                        " t.dealer_cm_id ";
                 List<Bean> beans = Data.Query("shop_member", sqlScanAdd, null, DataShopAddAStats.class);
                 if (StringUtil.isNotEmpty(beans)){
                     List<DataShopAddAStats> scanList = ObjectConversion.copy(beans, DataShopAddAStats.class);
                     List<DataShopAddAFromStats> list = fromData(scanList);
+
+                    //一次性获取中间表所有数据，判断新增或更新
+                    Map<String,String> map = new ConcurrentHashMap<String, String>();
+                    String ifSql = " SELECT t1.dealer_cm_id AS dealerCmId,t1.`year` AS `year` FROM data_shop_add_stats t1   ";
+                    List<Bean> dealerCmIdStatuses = Data.Query("sbms_main", ifSql, null, DataDealerCmIdStatus.class);
+                    if (StringUtil.isNotEmpty(dealerCmIdStatuses)){
+                        List<DataDealerCmIdStatus> paList = ObjectConversion.copy(dealerCmIdStatuses, DataDealerCmIdStatus.class);
+                        map = paList.stream().collect(Collectors.toMap(k->k.getDealerCmId()+k.getYear(),k->k.getDealerCmId()));
+                    }
 
                     //构建线程池
                     //当提交的任务数量为1000的时候，会开辟20个线程数
@@ -67,7 +75,7 @@ public class DataShopAddAStatsWorker extends Worker {
                     CountDownLatch countDownLatch = new CountDownLatch(list.size());
                     for(DataShopAddAFromStats dataShopAddAFromStats : list){
                         //业务处理线程
-                        DataShopAddAStatsThread dataShopAddAStatsThread = new DataShopAddAStatsThread(dataShopAddAFromStats,countDownLatch);
+                        DataShopAddAStatsThread dataShopAddAStatsThread = new DataShopAddAStatsThread(dataShopAddAFromStats,countDownLatch,map);
                         executorService.submit(dataShopAddAStatsThread);
                     }
                     countDownLatch.await();

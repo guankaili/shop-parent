@@ -8,9 +8,12 @@ import com.world.task.sbms.thread.DataShopAStatsThread;
 import com.world.util.ObjectConversion;
 import com.world.util.StringUtil;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 /**
  * TODO
@@ -48,10 +51,10 @@ public class DataShopAStatsWorker extends Worker {
                         "t.shop_Province AS shopProvince, " +
                         "t.brand_code AS brandCode, " +
                         "t.brand_name AS brandName, " +
-                        "COUNT( t.shop_status = 5 OR t.shop_status = 6 OR t.shop_status = 7 OR NULL ) AS shopTotalQuantity, " +
-                        "COUNT( t.shop_status = 6 OR NULL ) AS shopPanicQuantity, " +
-                        "COUNT( date_format( t.contract_time, '%Y-%m' ) = DATE_FORMAT( now(), '%Y-%m' ) OR NULL ) AS shopAddQuantity, " +
-                        "COUNT( t.shop_status = 6 AND date_format( t.contract_time, '%Y-%m' ) = DATE_FORMAT( now(), '%Y-%m' ) OR NULL ) AS shopAddPanicQuantity, " +
+                        "COUNT( t.id ) AS shopTotalQuantity, " +   //签约门店
+                        "COUNT( t.shop_status = 6 OR NULL ) AS shopPanicQuantity, " +  //抢购门店
+                        "COUNT( date_format( t.contract_time, '%Y-%m' ) = DATE_FORMAT( now(), '%Y-%m' ) OR NULL ) AS shopAddQuantity, " +   //新增门店
+                        "COUNT( t.shop_status = 6 AND date_format( t.contract_time, '%Y-%m' ) = DATE_FORMAT( now(), '%Y-%m' ) OR NULL ) AS shopAddPanicQuantity, " +  //新增抢购门店
                         "COUNT( t.shop_type = 1 OR NULL ) AS ctsARate, " +
                         "COUNT( t.shop_type = 2 OR NULL ) AS ctsRate, " +
                         "COUNT( t.shop_type = 3 OR NULL ) AS ccsARate, " +
@@ -59,6 +62,7 @@ public class DataShopAStatsWorker extends Worker {
                         "COUNT( t.shop_type = 5 OR NULL ) AS cpsRate " +
                         "FROM " +
                         "es_shop_detail t " +
+                        "WHERE (t.shop_status = 5 OR t.shop_status = 6 OR t.shop_status = 7) "+
                         "GROUP BY " +
                         "t.dealer_cm_id ";
 
@@ -66,100 +70,14 @@ public class DataShopAStatsWorker extends Worker {
                 List<Bean> shopBeans = Data.Query("shop_member", sqlShopBase, null, DataShopAStats.class);
                 if (StringUtil.isNotEmpty(shopBeans)) {
                     List<DataShopAStats> ShopBaseR = ObjectConversion.copy(shopBeans, DataShopAStats.class);
-                    //获取全国排名 和总数
-                    String sqlRank = " SELECT " +
-                            "t.dealer_code AS dealerCode, " +
-                            "t.dealer_name AS dealerName, " +
-                            "t.dealer_cm_id AS dealerCmId, " +
-                            "t.large_area_code AS largeAreaCode, " +
-                            "COUNT(t.shop_id) AS countryRank " +
-                            "FROM " +
-                            "es_shop_detail t " +
-                            "GROUP BY " +
-                            "t.dealer_cm_id " +
-                            "ORDER BY " +
-                            "countryRank DESC ";
-                    List<Bean> shopRank = Data.Query("shop_member", sqlRank, null, DataShopAStats.class);
-                    if (StringUtil.isNotEmpty(shopRank)) {
-                        List<DataShopAStats> scanRankR = ObjectConversion.copy(shopRank, DataShopAStats.class);
-                        //基础数据与排名合并
-                        ShopBaseR.forEach(item1 -> {
-                            scanRankR.forEach(item2 -> {
-                                //获取当前的排名
-                                int curIndex = scanRankR.indexOf(item2);
-                                if(item1.getDealerCmId().equals(item2.getDealerCmId())){
-                                    item1.setCountryQuantity((long) scanRankR.size());
-                                    item1.setCountryRank((long) curIndex);
-                                }
-                            });
-                        });
 
-                        //获取获取北方排名 和总数
-                        String sqlRankByBF = " SELECT " +
-                                "t.dealer_code AS dealerCode, " +
-                                "t.dealer_name AS dealerName, " +
-                                "t.dealer_cm_id AS dealerCmId, " +
-                                "t.large_area_code AS largeAreaCode, " +
-                                " COUNT(t.shop_id) AS areaRank " +
-                                "FROM " +
-                                " es_shop_detail t " +
-                                "WHERE t.large_area_code = 'N001' "+
-                                "GROUP BY " +
-                                " t.dealer_cm_id " +
-                                "ORDER BY " +
-                                " areaRank DESC ";
-                        List<Bean> shopRankByBF = Data.Query("shop_member", sqlRankByBF, null, DataShopAStats.class);
-                        if (StringUtil.isNotEmpty(shopRankByBF)){
-                            List<DataShopAStats> scanRankByBFR = ObjectConversion.copy(shopRankByBF, DataShopAStats.class);
-                            ShopBaseR.forEach(item1 -> {
-                                scanRankByBFR.forEach(item2 -> {
-                                    //获取当前的排名
-                                    if(item1.getDealerCmId().equals(item2.getDealerCmId())){
-                                        //判断是否是南区的用户
-                                        if (item1.getLargeAreaCode().equals(item2.getLargeAreaCode())){
-                                            //获取当前的排名
-                                            int curIndex2 = scanRankByBFR.indexOf(item2);
-                                            item1.setAreaQuantity((long) scanRankByBFR.size());
-                                            item1.setAreaRank((long)curIndex2);
-                                        }
-                                    }
-                                });
-                            });
-                        }
-
-
-                        //获取南方大区排名 和总数
-                        String sqlRankByNF = " SELECT " +
-                                "t.dealer_code AS dealerCode, " +
-                                "t.dealer_name AS dealerName, " +
-                                "t.dealer_cm_id AS dealerCmId, " +
-                                "t.large_area_code AS largeAreaCode, " +
-                                " COUNT(t.shop_id) AS areaRank " +
-                                "FROM " +
-                                " es_shop_detail t " +
-                                "WHERE t.large_area_code = 'S001' "+
-                                "GROUP BY " +
-                                " t.dealer_cm_id " +
-                                "ORDER BY " +
-                                " areaRank DESC ";
-                        List<Bean> shopRankByNF = Data.Query("shop_member", sqlRankByNF, null, DataShopAStats.class);
-                        if (StringUtil.isNotEmpty(shopRankByNF)){
-                            List<DataShopAStats> scanRankByNFR = ObjectConversion.copy(shopRankByNF, DataShopAStats.class);
-                            ShopBaseR.forEach(item1 -> {
-                                scanRankByNFR.forEach(item2 -> {
-                                    //获取当前的排名
-                                    if(item1.getDealerCmId().equals(item2.getDealerCmId())){
-                                        //判断是否是南区的用户
-                                        if (item1.getLargeAreaCode().equals(item2.getLargeAreaCode())){
-                                            //获取当前的排名
-                                            int curIndex3 = scanRankByNFR.indexOf(item2);
-                                            item1.setAreaQuantity((long)scanRankByNFR.size());
-                                            item1.setAreaRank((long)curIndex3);
-                                        }
-                                    }
-                                });
-                            });
-                        }
+                    //一次性获取中间表所有数据，判断新增或更新
+                    Map<String,String> map = new ConcurrentHashMap<String, String>();
+                    String ifSql = " SELECT t1.dealer_cm_id AS dealerCmId FROM data_shop_detail_stats t1  ";
+                    List<Bean> dealerCmIdStatuses = Data.Query("sbms_main", ifSql, null, DataDealerCmIdStatus.class);
+                    if (StringUtil.isNotEmpty(dealerCmIdStatuses)){
+                        List<DataDealerCmIdStatus> paList = ObjectConversion.copy(dealerCmIdStatuses, DataDealerCmIdStatus.class);
+                        map = paList.stream().collect(Collectors.toMap(DataDealerCmIdStatus::getDealerCmId,DataDealerCmIdStatus::getDealerCmId));
                     }
 
                     //构建线程池
@@ -168,7 +86,7 @@ public class DataShopAStatsWorker extends Worker {
                     CountDownLatch countDownLatch = new CountDownLatch(ShopBaseR.size());
                     for(DataShopAStats dataShopAStats : ShopBaseR){
                         //业务处理线程
-                        DataShopAStatsThread dataShopAStatsThread = new DataShopAStatsThread(dataShopAStats,countDownLatch);
+                        DataShopAStatsThread dataShopAStatsThread = new DataShopAStatsThread(dataShopAStats,countDownLatch,map);
                         executorService.submit(dataShopAStatsThread);
                     }
                     countDownLatch.await();

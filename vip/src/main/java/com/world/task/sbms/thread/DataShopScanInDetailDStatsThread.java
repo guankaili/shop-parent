@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -24,10 +25,12 @@ public class DataShopScanInDetailDStatsThread extends Thread {
     private static Logger logger = Logger.getLogger(DataShopScanAStatsThread.class);
     private DataShopScanInDetailDStats dataShopScanInDetailDStats;
     private CountDownLatch countDownLatch;
+    private Map<String,String> map;
 
-    public DataShopScanInDetailDStatsThread(DataShopScanInDetailDStats dataShopScanInDetailDStats, CountDownLatch countDownLatch) {
+    public DataShopScanInDetailDStatsThread(DataShopScanInDetailDStats dataShopScanInDetailDStats, CountDownLatch countDownLatch, Map<String,String> map) {
         this.dataShopScanInDetailDStats = dataShopScanInDetailDStats;
         this.countDownLatch = countDownLatch;
+        this.map = map;
     }
 
     @Override
@@ -44,11 +47,8 @@ public class DataShopScanInDetailDStatsThread extends Thread {
             //基本数据
             List<Object> param = new ArrayList<>();
 
-            //查询是否存在这个 业务员的id
-            List<Object> list = txObj.excuteQuery(new OneSql("SELECT t1.id FROM data_scan_in_detail_stats t1 " +
-                    "WHERE t1.dealer_cm_id = '" + dataShopScanInDetailDStats.getDealerCmId() + "' AND to_days(t1.shop_scan_in_detail_date) = to_days(now()) ", 1, null, "sbms_main"));
             //更新操作
-            if (StringUtil.isNotEmpty(list)) {
+            if (map.containsKey(dataShopScanInDetailDStats.getDealerCmId()+dataShopScanInDetailDStats.getShopScanInDetailDate())) {
                 startSql = " UPDATE ";
                 endSql = " WHERE dealer_cm_id = '" + dataShopScanInDetailDStats.getDealerCmId() + "' AND to_days(shop_scan_in_detail_date) = to_days(now())  ";
             } else {

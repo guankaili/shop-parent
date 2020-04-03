@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -23,10 +24,12 @@ public class DataShopAStatsThread extends Thread{
     private static Logger logger = Logger.getLogger(DataShopAStatsThread.class);
     private DataShopAStats dataShopAStats;
     private CountDownLatch countDownLatch;
+    private Map<String,String> map;
 
-    public DataShopAStatsThread(DataShopAStats dataShopAStats, CountDownLatch countDownLatch) {
+    public DataShopAStatsThread(DataShopAStats dataShopAStats, CountDownLatch countDownLatch, Map<String,String> map) {
         this.dataShopAStats = dataShopAStats;
         this.countDownLatch = countDownLatch;
+        this.map = map;
     }
 
     @Override
@@ -43,11 +46,8 @@ public class DataShopAStatsThread extends Thread{
             //基本数据
             List<Object> param = new ArrayList<>();
 
-            //查询是否存在这个 业务员的id
-            List<Object> list = txObj.excuteQuery(new OneSql("SELECT t1.id FROM data_shop_detail_stats t1 " +
-                    "WHERE t1.dealer_cm_id = '" + dataShopAStats.getDealerCmId() + "' ", 1, null, "sbms_main"));
             //更新操作
-            if (StringUtil.isNotEmpty(list)) {
+            if (map.containsKey(dataShopAStats.getDealerCmId())) {
                 startSql = " UPDATE ";
                 endSql = " WHERE dealer_cm_id = '" + dataShopAStats.getDealerCmId() + "' ";
             } else {
@@ -67,10 +67,6 @@ public class DataShopAStatsThread extends Thread{
             if (dataShopAStats.getShopPanicQuantity() != null){param.add(dataShopAStats.getShopPanicQuantity());sql.append(" shop_panic_quantity = ?, ");}
             if (dataShopAStats.getShopAddQuantity() != null){param.add(dataShopAStats.getShopAddQuantity());sql.append(" shop_add_quantity = ?, ");}
             if (dataShopAStats.getShopAddPanicQuantity() != null){param.add(dataShopAStats.getShopAddPanicQuantity());sql.append(" shop_add_panic_quantity = ?, ");}
-            if (dataShopAStats.getAreaRank() != null){param.add(dataShopAStats.getAreaRank());sql.append(" area_rank = ?, ");}
-            if (dataShopAStats.getAreaQuantity() != null){param.add(dataShopAStats.getAreaQuantity());sql.append(" area_quantity = ?, ");}
-            if (dataShopAStats.getCountryRank() != null){param.add(dataShopAStats.getCountryRank());sql.append(" country_rank = ?, ");}
-            if (dataShopAStats.getCountryQuantity() != null){param.add(dataShopAStats.getCountryQuantity());sql.append(" country_quantity = ?, ");}
             param.add(dataShopAStats.getCtsARate());sql.append(" cts_a_rate = ?, ");
             param.add(dataShopAStats.getCtsRate());sql.append(" cts_rate = ?, ");
             param.add(dataShopAStats.getCcsARate());sql.append(" ccs_a_rate = ?, ");

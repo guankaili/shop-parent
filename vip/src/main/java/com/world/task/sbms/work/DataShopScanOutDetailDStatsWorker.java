@@ -3,21 +3,18 @@ package com.world.task.sbms.work;
 import com.world.data.mysql.Bean;
 import com.world.data.mysql.Data;
 import com.world.model.dao.task.Worker;
-import com.world.model.sbms.DataShopScanInDetailDStats;
+import com.world.model.sbms.DataDealerCmIdStatus;
 import com.world.model.sbms.DataShopScanOutDetailDStats;
-import com.world.task.sbms.thread.DataShopScanInDetailDStatsThread;
 import com.world.task.sbms.thread.DataShopScanOutDetailDStatsThread;
 import com.world.util.ObjectConversion;
 import com.world.util.SqlUtil;
 import com.world.util.StringUtil;
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 /**
  * TODO
@@ -53,7 +50,8 @@ public class DataShopScanOutDetailDStatsWorker extends Worker {
                         "t.dealer_cm_id AS dealerCmId, " +
                         "t.dealer_cm_name AS dealerCmName, " +
                         "COUNT( t.id ) AS shopOutQuantity, " +
-                        "COUNT( DISTINCT t.shop_id ) AS shopJoinOutQuantity " +
+                        "COUNT( DISTINCT t.shop_id ) AS shopJoinOutQuantity, " +
+                        "date_format(t.create_datetime,'%Y-%m-%d') AS shopScanOutDetailDate " +
                         "FROM " +
                         "scan_batch_record_detail t " +
                         "WHERE " +
@@ -94,7 +92,7 @@ public class DataShopScanOutDetailDStatsWorker extends Worker {
                             "WHERE " +
                             "t.shop_status IN ( 5, 6, 7 ) " +
                             "AND to_days( t.contract_time ) = to_days( " +
-                            "now()) AND t.dealer_cm_id in ("+dealerCmId+") " +
+                            "now()) AND t.dealer_cm_id in (" + dealerCmId + ") " +
                             "GROUP BY " +
                             "t.dealer_cm_id ";
 
@@ -105,6 +103,7 @@ public class DataShopScanOutDetailDStatsWorker extends Worker {
                             outDetailDStatsByScan.forEach(item2 -> {
                                 if (item1.getDealerCmId().equals(item2.getDealerCmId())) {
                                     //入库量
+                                    item1.setShopSignQuantity(item2.getShopSignQuantity());
                                     item1.setShopProvinceId(item2.getShopProvinceId());
                                     item1.setShopProvince(item2.getShopProvince());
                                     item1.setLargeArea(item2.getLargeArea());
@@ -113,21 +112,30 @@ public class DataShopScanOutDetailDStatsWorker extends Worker {
                             });
                         });
                     }
+
+                    //一次性获取中间表所有数据，判断新增或更新
+                    Map<String, String> map = new ConcurrentHashMap<String, String>();
+                    String ifSql = " SELECT t1.dealer_cm_id AS dealerCmId,date_format(now(),'%Y-%m-%d') AS thisDate FROM data_scan_out_detail_stats t1 ";
+                    List<Bean> dealerCmIdStatuses = Data.Query("sbms_main", ifSql, null, DataDealerCmIdStatus.class);
+                    if (StringUtil.isNotEmpty(dealerCmIdStatuses)) {
+                        List<DataDealerCmIdStatus> paList = ObjectConversion.copy(dealerCmIdStatuses, DataDealerCmIdStatus.class);
+                        map = paList.stream().collect(Collectors.toMap(k -> k.getDealerCmId() + k.getThisDate(), k -> k.getDealerCmId()));
+                    }
+
                     ExecutorService executorService = Executors.newFixedThreadPool(10);
                     CountDownLatch countDownLatch = new CountDownLatch(outDetailDStats.size());
                     //灌数据
                     for (DataShopScanOutDetailDStats dataShopScanOutDetailDStats : outDetailDStats) {
                         //业务处理线程
-                        DataShopScanOutDetailDStatsThread dataShopScanOutDetailDStatsThread = new DataShopScanOutDetailDStatsThread(dataShopScanOutDetailDStats, countDownLatch);
+                        DataShopScanOutDetailDStatsThread dataShopScanOutDetailDStatsThread = new DataShopScanOutDetailDStatsThread(dataShopScanOutDetailDStats, countDownLatch, map);
                         executorService.submit(dataShopScanOutDetailDStatsThread);
                     }
                     countDownLatch.await();
                     /*关闭线程池*/
                     executorService.shutdown();
-                    }
-
+                }
             } catch (Exception e) {
-                log.error("门店扫码首页数据同步失败", e);
+                log.error("门店扫码出库详细列表数据同步失败", e);
             } finally {
                 workFlag = true;
             }

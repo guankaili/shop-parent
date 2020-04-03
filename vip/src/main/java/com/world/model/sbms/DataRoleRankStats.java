@@ -34,6 +34,10 @@ public class DataRoleRankStats extends Bean implements Serializable {
      */
     private String userSign;
     /**
+     * 经销商名称
+     */
+    private String userSignName;
+    /**
      * 排名总数量
      */
     private Long countryQuantity;

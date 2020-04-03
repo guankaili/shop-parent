@@ -70,6 +70,6 @@ public class DataShopScanOutDetailDStats extends Bean implements Serializable {
     /**
      * 记录日期
      */
-    private Date shopScanOutDetailDate;
+    private String shopScanOutDetailDate;
 
 }

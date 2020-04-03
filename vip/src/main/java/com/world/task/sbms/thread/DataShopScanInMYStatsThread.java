@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -22,11 +23,13 @@ public class DataShopScanInMYStatsThread extends Thread {
     private static Logger logger = Logger.getLogger(DataShopScanAStatsThread.class);
     private DataShopScanInMYFromStats dataShopScanInMYFromStats;
     private CountDownLatch countDownLatch;
+    private Map<String,String> map;
 
     //传入加工后的实体
-    public DataShopScanInMYStatsThread(DataShopScanInMYFromStats dataShopScanInMYFromStats, CountDownLatch countDownLatch) {
+    public DataShopScanInMYStatsThread(DataShopScanInMYFromStats dataShopScanInMYFromStats, CountDownLatch countDownLatch, Map<String,String> map) {
         this.dataShopScanInMYFromStats = dataShopScanInMYFromStats;
         this.countDownLatch = countDownLatch;
+        this.map = map;
     }
 
     @Override
@@ -43,12 +46,8 @@ public class DataShopScanInMYStatsThread extends Thread {
             //基本数据
             List<Object> param = new ArrayList<>();
 
-            //查询是否存在这个 业务员的id
-            List<Object> list = txObj.excuteQuery(new OneSql("SELECT t1.id FROM data_scan_in_stats t1 " +
-                    "WHERE t1.dealer_cm_id = '" + dataShopScanInMYFromStats.getDealerCmId() + "' and t1.`year` = '"+
-                    dataShopScanInMYFromStats.getScanYear()+"' ", 1, null, "sbms_main"));
             //更新操作
-            if (StringUtil.isNotEmpty(list)) {
+            if (map.containsKey(dataShopScanInMYFromStats.getDealerCmId()+dataShopScanInMYFromStats.getScanYear())) {
                 startSql = " UPDATE ";
                 endSql = " WHERE dealer_cm_id = '" + dataShopScanInMYFromStats.getDealerCmId() + "' ";
             } else {

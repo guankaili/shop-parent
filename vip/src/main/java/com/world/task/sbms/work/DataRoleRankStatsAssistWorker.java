@@ -3,15 +3,18 @@ package com.world.task.sbms.work;
 import com.world.data.mysql.Bean;
 import com.world.data.mysql.Data;
 import com.world.model.dao.task.Worker;
+import com.world.model.sbms.DataDealerCmIdStatus;
 import com.world.model.sbms.DataRoleRankStatsAssistRawStats;
 import com.world.task.sbms.thread.DataRoleRankStatsAssistStatsThread;
 import com.world.util.ObjectConversion;
 import com.world.util.StringUtil;
-
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 /**
  * TODO
@@ -24,6 +27,8 @@ public class DataRoleRankStatsAssistWorker extends Worker {
 
     /*此轮定时任务结束标识*/
     private static boolean workFlag = true;
+
+    private static final String RELO_ID = "921a5417-a374-44e2-a617-396e77959ff7";
 
     public DataRoleRankStatsAssistWorker(String name, String des) {
         super(name, des);
@@ -43,13 +48,11 @@ public class DataRoleRankStatsAssistWorker extends Worker {
                 if (StringUtil.isNotEmpty(beans)) {
                     List<DataRoleRankStatsAssistRawStats> uaas = ObjectConversion.copy(beans, DataRoleRankStatsAssistRawStats.class);
 
-
                     //再区查询uua角色表
-                    String uuaSql = "SELECT t1.user_id AS userId,t2.title AS title" +
-                            " FROM cbm_mag_l_user_post t1 " +
-                            " LEFT JOIN cbm_mag_post t2 ON t1.post_id = t2.id " +
-                            " GROUP BY t1.user_id";
-                    List<Bean> uaaBeans = Data.Query("weilai_backend", uuaSql, null, DataRoleRankStatsAssistRawStats.class);
+                    String uuaSql = " SELECT DISTINCT t1.user_id AS userId,t3.id AS roleId FROM cbm_mag_l_user_dealer t1 " +
+                            "LEFT JOIN cbm_mag_l_user_role t2 ON t1.user_id = t2.user_id " +
+                            "LEFT JOIN cbm_mag_role t3 ON t2.role_id = t3.id ";
+                    List<Bean> uaaBeans = Data.Query("weilai_uaa", uuaSql, null, DataRoleRankStatsAssistRawStats.class);
                     if (StringUtil.isNotEmpty(uaaBeans)) {
                         List<DataRoleRankStatsAssistRawStats> backends = ObjectConversion.copy(uaaBeans, DataRoleRankStatsAssistRawStats.class);
                         if (StringUtil.isNotEmpty(backends)) {
@@ -57,21 +60,31 @@ public class DataRoleRankStatsAssistWorker extends Worker {
                                 backends.forEach(item2 -> {
                                     if (item1.getUserId().equals(item2.getUserId())) {
                                         //判断权限
-                                        if (item2.getTitle().contains("业务员")) {
+                                        if (item2.getRoleId().equals(RELO_ID)) {
                                             item1.setRoleType(2);
                                         } else {
                                             item1.setRoleType(3);
                                         }
 
-                                        //发送保存起来
+                                        //一次性获取中间表所有数据，判断新增或更新
+                                        Map<String, String> map = new ConcurrentHashMap<String, String>();
+                                        String ifSql = " SELECT t1.user_id AS userId,dealer_code AS dealerCode FROM data_role_rank_assist_stats t1 ";
+                                        List<Bean> dealerCmIdStatuses = Data.Query("sbms_main", ifSql, null, DataDealerCmIdStatus.class);
+                                        if (StringUtil.isNotEmpty(dealerCmIdStatuses)) {
+                                            List<DataDealerCmIdStatus> list = ObjectConversion.copy(dealerCmIdStatuses, DataDealerCmIdStatus.class);
+                                            map = list.stream().collect(Collectors.toMap(k -> k.getUserId() + k.getDealerCode(), k -> k.getDealerCode()));
+                                        }
+
                                         //构建线程池
                                         //当提交的任务数量为1000的时候，会开辟20个线程数
                                         ExecutorService executorService = Executors.newFixedThreadPool(10);
                                         CountDownLatch countDownLatch = new CountDownLatch(uaas.size());
 
                                         //业务处理线程
-                                        DataRoleRankStatsAssistStatsThread dataRoleRankStatsAssistStatsThread = new DataRoleRankStatsAssistStatsThread(item1, countDownLatch);
-                                        executorService.submit(dataRoleRankStatsAssistStatsThread);
+                                        for (DataRoleRankStatsAssistRawStats data : uaas) {
+                                            DataRoleRankStatsAssistStatsThread dataRoleRankStatsAssistStatsThread = new DataRoleRankStatsAssistStatsThread(data, countDownLatch, map);
+                                            executorService.submit(dataRoleRankStatsAssistStatsThread);
+                                        }
 
                                         try {
                                             countDownLatch.await();
@@ -80,13 +93,13 @@ public class DataRoleRankStatsAssistWorker extends Worker {
                                         }
                                         /*关闭线程池*/
                                         executorService.shutdown();
-
                                     }
                                 });
                             });
                         }
                     }
                 }
+
             } catch (Exception e) {
                 log.error("获取排名信息:辅助获取开始", e);
             } finally {

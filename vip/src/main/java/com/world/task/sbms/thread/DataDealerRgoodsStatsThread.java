@@ -94,7 +94,7 @@ public class DataDealerRgoodsStatsThread extends Thread{
             param.add(dealerGoodsStatsList.get(0).getProvinceCode());
             param.add(dealerGoodsStatsList.get(0).getProvinceName());
             param.add(dealerGoodsStatsList.get(0).getBrandCode());
-            param.add(BrandEnum.getByCode(dealerGoodsStatsList.get(0).getBrandCode()).getName());
+            param.add(BrandEnum.getByCode(dealerGoodsStatsList.get(0).getBrandCode()).getCode());
             param.add(year);
             param.add(goodsQuantity.getGoodsQuantityM1());
             param.add(goodsQuantity.getGoodsQuantityM2());

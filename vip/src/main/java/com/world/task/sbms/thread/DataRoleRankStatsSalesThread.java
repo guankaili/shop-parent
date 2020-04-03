@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -24,11 +25,13 @@ public class DataRoleRankStatsSalesThread  extends Thread {
     private DataRoleRankStats dataRoleRankStats;
     private CountDownLatch countDownLatch;
     private int size;
+    private Map<String,String> map;
 
-    public DataRoleRankStatsSalesThread(DataRoleRankStats dataRoleRankStats, CountDownLatch countDownLatch, int size) {
+    public DataRoleRankStatsSalesThread(DataRoleRankStats dataRoleRankStats, CountDownLatch countDownLatch, int size, Map<String,String> map) {
         this.dataRoleRankStats = dataRoleRankStats;
         this.countDownLatch = countDownLatch;
         this.size = size;
+        this.map = map;
     }
 
     @Override
@@ -45,11 +48,8 @@ public class DataRoleRankStatsSalesThread  extends Thread {
             //基本数据
             List<Object> param = new ArrayList<>();
 
-            //查询是否存在这个 业务员的id
-            List<Object> list = txObj.excuteQuery(new OneSql("SELECT t1.id FROM data_role_rank_stats t1 " +
-                    "WHERE t1.user_sign = '" + dataRoleRankStats.getUserSign() + "'  ", 1, null, "sbms_main"));
             //更新操作
-            if (StringUtil.isNotEmpty(list)) {
+            if (map.containsKey(dataRoleRankStats.getUserSign())) {
                 startSql = " UPDATE ";
                 endSql = " WHERE user_sign = '" + dataRoleRankStats.getUserSign() + "' ";
             } else {

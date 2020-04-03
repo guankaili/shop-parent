@@ -18,10 +18,13 @@ public class OrderItemsModel extends Bean {
     private String sku_sn;
 
     /**销售量*/
-    private Integer num;
+    private long num;
 
     /**发货量*/
-    private Integer ship_num;
+    private long ship_num;
+
+    /**退货数量*/
+    private long refund_num;
 
     /**交易编号*/
     private String trade_sn;
@@ -85,7 +88,7 @@ public class OrderItemsModel extends Bean {
     private String shop_name;
 
     /**扫码入库数量*/
-    private Integer scan_in_num;
+    private long scan_in_num;
 
     /**扫码出库数量*/
     private Integer scan_return_num;
@@ -128,19 +131,19 @@ public class OrderItemsModel extends Bean {
         this.sku_sn = sku_sn;
     }
 
-    public Integer getNum() {
+    public long getNum() {
         return num;
     }
 
-    public void setNum(Integer num) {
+    public void setNum(long num) {
         this.num = num;
     }
 
-    public Integer getShip_num() {
+    public long getShip_num() {
         return ship_num;
     }
 
-    public void setShip_num(Integer ship_num) {
+    public void setShip_num(long ship_num) {
         this.ship_num = ship_num;
     }
 
@@ -296,11 +299,11 @@ public class OrderItemsModel extends Bean {
         this.shop_name = shop_name;
     }
 
-    public Integer getScan_in_num() {
+    public long getScan_in_num() {
         return scan_in_num;
     }
 
-    public void setScan_in_num(Integer scan_in_num) {
+    public void setScan_in_num(long scan_in_num) {
         this.scan_in_num = scan_in_num;
     }
 
@@ -326,5 +329,13 @@ public class OrderItemsModel extends Bean {
 
     public void setShip_dealer_name(String ship_dealer_name) {
         this.ship_dealer_name = ship_dealer_name;
+    }
+
+    public long getRefund_num() {
+        return refund_num;
+    }
+
+    public void setRefund_num(long refund_num) {
+        this.refund_num = refund_num;
     }
 }

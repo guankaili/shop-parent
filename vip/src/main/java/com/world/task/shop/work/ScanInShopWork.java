@@ -1,14 +1,15 @@
 package com.world.task.shop.work;
 
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import com.world.data.mysql.Bean;
 import com.world.data.mysql.Data;
 import com.world.model.dao.task.Worker;
 import com.world.model.shop.ScanBatchRecordDetailModel;
 import com.world.task.shop.thread.ScanInShopThread;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  *
@@ -41,7 +42,7 @@ public class ScanInShopWork extends Worker {
                 /**
                  *
                  */
-                sql = "select * from scan_batch_record_detail_bak where scan_type = 3 limit 1 ";
+                sql = "select * from scan_batch_record_detail_bak where scan_type = 3 and show_deal_flag = 0 limit 1000 ";
                 log.info("sql = " + sql);
                 List<Bean> scanBatchRecordDetailModelList = (List<Bean>) Data.Query("scan_main", sql, null, ScanBatchRecordDetailModel.class);
 
@@ -78,7 +79,7 @@ public class ScanInShopWork extends Worker {
 
     public static void main(String[] args) {
         ScanInShopWork scanInShopWork = new ScanInShopWork("", "");
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 1; i++) {
             scanInShopWork.run();
         }
     }

@@ -90,7 +90,7 @@ public class ScanInShopThread extends Thread {
         //门店信息
         ShopDetailModel shopDetailModel = findShopDetail(shopId);
         if (null == shopDetailModel || null == shopDetailModel.getShop_type() || null == shopDetailModel.getMember_id()) {
-            msg = "扫码退货报警REWARDERROR【门店信息不存在】:sql = " + sql;
+            msg = "扫码退货报警REWARDERROR【门店信息不存在】";
             log.info(msg);
             throw new Exception(msg);
         }
@@ -107,7 +107,7 @@ public class ScanInShopThread extends Thread {
         MemberIntegralModel memberIntegralScore = findMemberIntegralScore(scanBatchRecordDetailModel);
         int curScanInExpectNum = 0;
         if (null == memberIntegralScore) {
-            msg = "扫码退货报警REWARDERROR【积分和返利账户信息不存在】:sql = " + sql;
+            msg = "扫码退货报警REWARDERROR【积分和返利账户信息不存在】";
             log.info(msg);
             throw new Exception(msg);
         }
@@ -120,7 +120,7 @@ public class ScanInShopThread extends Thread {
          */
         ShopConfTaskMModel shopConfTaskMModel = findShopConfTaskM(shopType);
         if (null == shopConfTaskMModel) {
-            msg = "扫码退货报警REWARDERROR【门店任务量不存在】:sql = " + sql;
+            msg = "扫码退货报警REWARDERROR【门店任务量不存在】";
             log.info(msg);
             throw new Exception(msg);
         }
@@ -143,7 +143,7 @@ public class ScanInShopThread extends Thread {
          */
         ShopConfIntegralModel shopConfIntegralModel = findShopConfIntegral(shopType, goodsSizeInt);
         if (null == shopConfIntegralModel) {
-            msg = "扫码退货报警REWARDERROR【积分配置信息不存在】:sql = " + sql;
+            msg = "扫码退货报警REWARDERROR【积分配置信息不存在】";
             log.info(msg);
             throw new Exception(msg);
         }
@@ -156,7 +156,7 @@ public class ScanInShopThread extends Thread {
          */
         ShopConfRebateModel shopConfRebateModel = findShopConfRebate(shopType, goodsSizeInt);
         if (null == shopConfRebateModel) {
-            msg = "扫码退货报警REWARDERROR【返利配置信息不存在】:sql = " + sql;
+            msg = "扫码退货报警REWARDERROR【返利配置信息不存在】";
             log.info(msg);
             throw new Exception(msg);
         }
@@ -308,7 +308,7 @@ public class ScanInShopThread extends Thread {
         OrderItemsModel orderItemsModel = (OrderItemsModel) Data.GetOne("shop_trade", sql, null, OrderItemsModel.class);
         log.info("orderItemsModel = " + JSON.toJSONString(orderItemsModel));
         if (null == orderItemsModel) {
-            msg = "扫码入库报警REWARDERROR【订单信息不存在】:sql = " + sql;
+            msg = "扫码入库报警REWARDERROR【订单信息不存在】";
             log.info(msg);
             throw new Exception(msg);
         }
@@ -335,7 +335,7 @@ public class ScanInShopThread extends Thread {
         log.info("sql = " + sql);
         OrderModel orderModel = (OrderModel) Data.GetOne("shop_trade", sql, null, OrderModel.class);
         if (null == orderModel || StringUtils.isEmpty(orderModel.getSn())) {
-            msg = "扫码入库报警REWARDERROR【订单信息不存在】:sql = " + sql;
+            msg = "扫码入库报警REWARDERROR【订单信息不存在】";
             log.info(msg);
             throw new Exception(msg);
         }
@@ -491,7 +491,7 @@ public class ScanInShopThread extends Thread {
         ShopConfRebateModel shopConfRebateModel = (ShopConfRebateModel) Data.GetOne("shop_member", sql, null, ShopConfRebateModel.class);
         log.info("shopConfRebateModel = " + JSON.toJSONString(shopConfRebateModel));
         if (null == shopConfRebateModel || null == shopConfRebateModel.getScore() || 0 == shopConfRebateModel.getScore()) {
-        	msg = "扫码入库报警REWARDERROR【返利配置信息不存在】:sql = " + sql;
+        	msg = "扫码入库报警REWARDERROR【返利配置信息不存在】";
             log.info(msg);
             throw new Exception(msg);
         }
@@ -529,7 +529,7 @@ public class ScanInShopThread extends Thread {
         ShopConfIntegralModel shopConfIntegralModel = (ShopConfIntegralModel) Data.GetOne("shop_member", sql, null, ShopConfIntegralModel.class);
         log.info("shopConfIntegralModel = " + JSON.toJSONString(shopConfIntegralModel));
         if (null == shopConfIntegralModel || null == shopConfIntegralModel.getScore() || 0 == shopConfIntegralModel.getScore()) {
-        	msg = "扫码入库报警REWARDERROR【积分配置信息不存在】:sql = " + sql;
+        	msg = "扫码入库报警REWARDERROR【积分配置信息不存在】";
             log.info(msg);
             throw new Exception(msg);
         }

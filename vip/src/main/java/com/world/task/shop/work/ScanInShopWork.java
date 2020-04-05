@@ -42,7 +42,7 @@ public class ScanInShopWork extends Worker {
                 /**
                  *
                  */
-                sql = "select * from scan_batch_record_detail_bak where scan_type = 3 and show_deal_flag = 0 limit 1000 ";
+                sql = "select * from scan_batch_record_detail where scan_type = 3 and show_deal_flag = 0 limit 1000 ";
                 log.info("sql = " + sql);
                 List<Bean> scanBatchRecordDetailModelList = (List<Bean>) Data.Query("scan_main", sql, null, ScanBatchRecordDetailModel.class);
 

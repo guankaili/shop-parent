@@ -239,7 +239,7 @@ public class ScanOutShopThread extends Thread {
     
     private void updateScanInDetailRecoverFlag(List<OneSql> sqls, ScanBatchRecordDetailModel scanInRecordDetail) {
     	long scanInId = scanInRecordDetail.getId();
-    	sql = "update scan_batch_record_detail_bak set recover_flag = 1 where id = " + scanInId;
+    	sql = "update scan_batch_record_detail set recover_flag = 1 where id = " + scanInId;
     	log.info("sql = " + sql);
         sqls.add(new OneSql(sql, 1, null, "scan_main"));
 		
@@ -249,7 +249,7 @@ public class ScanOutShopThread extends Thread {
     	long barCode = scanBatchRecordDetailModel.getBar_code();
         
         /**激活代金券扫码入库对应记录的主键*/
-        sql = "select * from scan_batch_record_detail_bak "
+        sql = "select * from scan_batch_record_detail "
         	+ "where bar_code = " + barCode + " and scan_type = 3 and recover_flag = 0 and show_deal_flag = 1 "
         	+ "order by id desc limit 1";
         log.info("sql = " + sql);
@@ -270,7 +270,7 @@ public class ScanOutShopThread extends Thread {
         /**激活代金券扫码入库对应记录的主键*/
         long scanInId = memberCouponModel.getScan_in_id();
         
-        sql = "select * from scan_batch_record_detail_bak where id = " + scanInId;
+        sql = "select * from scan_batch_record_detail where id = " + scanInId;
         log.info("sql = " + sql);
         ScanBatchRecordDetailModel scanInRecordDetail = (ScanBatchRecordDetailModel) Data.GetOne("scan_main", sql, null, ScanBatchRecordDetailModel.class);
         log.info("scanInRecordDetail = " + JSON.toJSONString(scanInRecordDetail));
@@ -681,7 +681,7 @@ public class ScanOutShopThread extends Thread {
      */
     public void updateScanDetailFlag(long scanId, int showDealFlag, String showDealMsg) {
         //更新扫码明细数据状态
-        sql = "update scan_batch_record_detail_bak set show_deal_flag = " + showDealFlag + ", show_deal_msg = '" + showDealMsg + "' "
+        sql = "update scan_batch_record_detail set show_deal_flag = " + showDealFlag + ", show_deal_msg = '" + showDealMsg + "' "
                 + "where id = " + scanId;
         log.info("sql = " + sql);
         Data.Update("scan_main", sql, null);
@@ -696,7 +696,7 @@ public class ScanOutShopThread extends Thread {
      */
     public void updateScanDetailFlagTS(List<OneSql> sqls, long scanId, int showDealFlag, String showDealMsg) {
         //更新扫码明细数据状态
-        sql = "update scan_batch_record_detail_bak set show_deal_flag = " + showDealFlag + ", show_deal_msg = '" + showDealMsg + "' "
+        sql = "update scan_batch_record_detail set show_deal_flag = " + showDealFlag + ", show_deal_msg = '" + showDealMsg + "' "
                 + "where id = " + scanId;
         log.info("sql = " + sql);
         sqls.add(new OneSql(sql, 1, null, "scan_main"));

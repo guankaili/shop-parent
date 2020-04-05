@@ -602,7 +602,7 @@ public class ScanInShopThread extends Thread {
      */
     public void updateScanDetailFlag(long scanId, int showDealFlag, String showDealMsg) {
         //更新扫码明细数据状态
-        sql = "update scan_batch_record_detail_bak set show_deal_flag = " + showDealFlag + ", show_deal_msg = '" + showDealMsg + "' "
+        sql = "update scan_batch_record_detail set show_deal_flag = " + showDealFlag + ", show_deal_msg = '" + showDealMsg + "' "
                 + "where id = " + scanId;
         log.info("sql = " + sql);
         Data.Update("scan_main", sql, null);
@@ -617,7 +617,7 @@ public class ScanInShopThread extends Thread {
      */
     public void updateScanDetailFlagTS(List<OneSql> sqls, long scanId, int showDealFlag, String showDealMsg) {
         //更新扫码明细数据状态
-        sql = "update scan_batch_record_detail_bak set show_deal_flag = " + showDealFlag + ", show_deal_msg = '" + showDealMsg + "' "
+        sql = "update scan_batch_record_detail set show_deal_flag = " + showDealFlag + ", show_deal_msg = '" + showDealMsg + "' "
                 + "where id = " + scanId;
         log.info("sql = " + sql);
         sqls.add(new OneSql(sql, 1, null, "scan_main"));

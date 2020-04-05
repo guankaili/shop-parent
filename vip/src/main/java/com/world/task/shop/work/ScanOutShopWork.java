@@ -47,7 +47,7 @@ public class ScanOutShopWork extends Worker {
                  * --   `flow_state` int(11) DEFAULT '0' COMMENT '订单状态：1-正常;2-门店入库退货;3-门店未入库退货;'   1不需要
                  * --   `scan_type` int(11) DEFAULT NULL COMMENT '扫码种类：1-经销商退货;2-经销商退货扫码;3-门店入库;4-门店退货',
                  */
-                sql = "select * from scan_batch_record_detail_bak where scan_type = 2 and flow_state = 2 and show_deal_flag = 0 limit 1000 ";
+                sql = "select * from scan_batch_record_detail where scan_type = 2 and flow_state = 2 and show_deal_flag = 0 limit 1000 ";
                 log.info("sql = " + sql);
                 List<Bean> scanBatchRecordDetailModelList = (List<Bean>) Data.Query("scan_main", sql, null, ScanBatchRecordDetailModel.class);
 

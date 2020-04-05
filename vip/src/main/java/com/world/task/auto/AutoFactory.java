@@ -1,7 +1,25 @@
 package com.world.task.auto;
 
 import com.world.model.dao.task.TaskFactory;
-import com.world.task.sbms.work.*;
+import com.world.task.sbms.work.DataDealerIgoodsStatsWorker;
+import com.world.task.sbms.work.DataDealerOgoodsStatsWorker;
+import com.world.task.sbms.work.DataDealerRgoodsStatsWorker;
+import com.world.task.sbms.work.DataMainShopMStatsWorker;
+import com.world.task.sbms.work.DataRoleRankStatsAssistWorker;
+import com.world.task.sbms.work.DataRoleRankStatsDealerWorker;
+import com.world.task.sbms.work.DataRoleRankStatsSalesWorker;
+import com.world.task.sbms.work.DataShopAStatsWorker;
+import com.world.task.sbms.work.DataShopAddAStatsWorker;
+import com.world.task.sbms.work.DataShopScanAStatsWorker;
+import com.world.task.sbms.work.DataShopScanInDetailDStatsWorker;
+import com.world.task.sbms.work.DataShopScanInMYStatsWorker;
+import com.world.task.sbms.work.DataShopScanOutDetailDStatsWorker;
+import com.world.task.sbms.work.DataShopScanOutMYStatsWorker;
+import com.world.task.sbms.work.DataShopSignBuyAStatsWorker;
+import com.world.task.sbms.work.WorkHomeMStatsWorker;
+import com.world.task.sbms.work.WorkHomeYStatsWorker;
+import com.world.task.shop.work.ScanInShopWork;
+import com.world.task.shop.work.ScanOutShopWork;
 
 public class AutoFactory extends TaskFactory {
 
@@ -62,25 +80,13 @@ public class AutoFactory extends TaskFactory {
         work(new WorkHomeYStatsWorker("WorkHomeYStatsWorker", "数据模块，门店年度任务量统计"), 1 * 60 * 1000);
 
 
-        /**
-         * 扫描层级人数
-         * SetUserInvitaionNum
-         */
-        //work(new SetUserInvitaionNum("SetUserInvitaionNum", "扫描层级人数"), 1 * 60 * 1000);
         
         /**
-         * 动态奖金(建点,指导,晋升)分配-跑的时候开(cal分配区间)
-         * DynamicBonusDisWork
+         * 预展示扫码入库计算
+         * 预展示扫码退货计算
          */
-//        work(new DynamicBonusResetCalWork("DynamicBonusResetCalWork", "动态奖金(建点,指导,晋升)重新计算"), 10 * 60 * 1000);
-//        work(new DynamicBonusDisWork("DynamicBonusDisWork", "动态奖金(建点,指导,晋升)结算"), 10 * 60 * 1000);
-        
-        /**
-         * 理财-生态参与回馈-分配定时任务（10分钟一次）
-         * 理财-生态参与回馈-结算定时任务（10分钟一次）
-         */
-//        work(new EcoRewardAssignWork("EcoRewardAssignWork", "生态参与回馈分配定时任务"), 20 * 60 * 1000);
-//        work(new EcoRewardBillWork("EcoRewardBillWork", "生态参与回馈结算定时任务"), 10 * 60 * 1000);
+        work(new ScanInShopWork("ScanInShopWork", "预展示扫码入库计算"), 3 * 1000);
+        work(new ScanOutShopWork("ScanOutShopWork", "预展示扫码退货计算"), 3 * 1000);
 
     }
     

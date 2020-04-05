@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
+import com.world.data.mysql.Bean;
 import com.world.model.shop.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -49,7 +50,7 @@ public class ScanInShopThread extends Thread {
             this.scanInDeal(scanBatchRecordDetailModel, sqls);
             //更新扫码明细表数据状态
             this.updateScanDetailFlagTS(sqls, scanId, 1, "扫码入库处理成功");
-
+            
             /**提交事务*/
             txObj.excuteUpdateList(sqls);
             if (txObj.commit()) {
@@ -57,12 +58,12 @@ public class ScanInShopThread extends Thread {
             } else {
                 log.info("扫码入库报警REWARDERROR:【扫码入库处理】处理失败，数据ID【" + scanId + "】");
             }
-
+            
             long endTime = System.currentTimeMillis();
             log.info("扫码入库报警REWARDInfo:【扫码入库处理】数据ID【" + scanId + "】处理耗时【" + (endTime - startTime) + "】");
         } catch (Exception e) {
             log.info("扫码入库报警REWARDERROR:ScanInDealerThread", e);
-            this.updateScanDetailFlag(scanId, 2, msg + e);
+            this.updateScanDetailFlag(scanId, 2, msg);
         } finally {
             countDownLatch.countDown();
         }
@@ -79,8 +80,6 @@ public class ScanInShopThread extends Thread {
         long scanId = scanBatchRecordDetailModel.getId();
         /**扫码条码*/
         long barCode = scanBatchRecordDetailModel.getBar_code();
-        /**商品编号*/
-        String goodsCode = scanBatchRecordDetailModel.getGoods_code();
         //所属门店ID
         int shopId = scanBatchRecordDetailModel.getShop_id();
 
@@ -170,20 +169,19 @@ public class ScanInShopThread extends Thread {
          * 查找 es_member_coupon 中是否有此条码对应的，未激活的代金券
          * 使用状态;0未使用，3-使用中(冻结)，1已使用,2是已过期；4-未激活；5-退货失效；
          * 优惠券类型：1-默认原始的；2-赠券；3-代金券
+         * 
+         * TODO 需要按照产品组查询
          */
-        MemberCouponModel memberCouponModel = findMemberCoupon(goodsCode, memberId);
+//        MemberCouponModel memberCouponModel = findMemberCoupon(goodsCode, memberId);
+        MemberCouponModel memberCouponModel = findMemberCouponRelyGoodsGroup(scanBatchRecordDetailModel, memberId);
         
         if (null != memberCouponModel) {
         	/**
         	 * 还有可以激活的代金券，激活代金券
         	 * 修订订单项(扫码入库数量)
+             * 修改订单状态
         	 */
         	activeMemberCoupon(sqls, barCode, memberCouponModel, scanBatchRecordDetailModel);
-        	
-        	/**
-             * 修订订单状态
-             * TODO
-             */
         }
         
         /**
@@ -353,6 +351,39 @@ public class ScanInShopThread extends Thread {
         log.info("memberCouponModel = " + JSON.toJSONString(memberCouponModel));
 		return memberCouponModel;
 	}
+
+    public MemberCouponModel findMemberCouponRelyGoodsGroup(ScanBatchRecordDetailModel scanBatchRecordDetailModel, int memberId) {
+    	/**商品编号*/
+        String goodsCode = scanBatchRecordDetailModel.getGoods_code();
+        
+        List<Bean> goodsGroupModelList = this.findGoodsGroupModel(goodsCode);
+        //拼接IN查询
+        goodsCode = "'" + goodsCode + "'";
+        if (null != goodsGroupModelList && goodsGroupModelList.size() > 0) {
+            GoodsGroupModel goodsGroupModel = null;
+            for (int i = 0; i < goodsGroupModelList.size(); i++) {
+                goodsGroupModel = (GoodsGroupModel) goodsGroupModelList.get(i);
+                goodsCode += ", '" + goodsGroupModel.getGoods_code() + "'";
+            }
+        }
+        log.info("goodsCode = " + goodsCode);
+
+        sql = "select * from es_member_coupon where member_id = " + memberId + " and seller_id = 1 and goods_sku_sn in (" + goodsCode + ") "
+                + "and coupon_type = 3 and used_status = 4 order by mc_id asc limit 1 ";
+        log.info("sql = " + sql);
+        MemberCouponModel memberCouponModel = (MemberCouponModel) Data.GetOne("shop_trade", sql, null, MemberCouponModel.class);
+        log.info("memberCouponModel = " + JSON.toJSONString(memberCouponModel));
+        return memberCouponModel;
+    }
+
+	public List<Bean> findGoodsGroupModel(String goodsCode) {
+        sql = "select * from es_goods_group "
+            + "where group_code = (select group_code from es_goods_group where goods_code = '" + goodsCode + "' )";
+        log.info("sql = " + sql);
+        List<Bean> goodsGroupModelList = (List<Bean>) Data.Query("shop_goods", sql, null, GoodsGroupModel.class);
+        log.info("goodsGroupModelList = " + JSON.toJSONString(goodsGroupModelList));
+        return goodsGroupModelList;
+    }
     
     public ShopConfRebateModel findShopConfRebate(int shopType, int goodsSizeInt) {
     	//当前日期

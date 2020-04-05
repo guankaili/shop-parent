@@ -58,7 +58,7 @@ public class GoodsNameSplitUtil {
     }
 
     public static void main(String[] args) {
-        Map<String, String> map = GoodsNameSplitUtil.getSpec("DL-195/65R15_DH1_91_V_FH");
+        Map<String, String> map = GoodsNameSplitUtil.getSpec("路航 DL-195/65R15_DH1_91_V_FH");
         System.out.println(map);
     }
 }

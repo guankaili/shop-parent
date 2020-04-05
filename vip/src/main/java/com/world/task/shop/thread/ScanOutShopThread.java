@@ -11,9 +11,11 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.alibaba.fastjson.JSON;
+import com.world.data.mysql.Bean;
 import com.world.data.mysql.Data;
 import com.world.data.mysql.OneSql;
 import com.world.data.mysql.transaction.TransactionObject;
+import com.world.model.shop.GoodsGroupModel;
 import com.world.model.shop.MemberCouponModel;
 import com.world.model.shop.MemberIntegralModel;
 import com.world.model.shop.ScanBatchRecordDetailModel;
@@ -71,7 +73,7 @@ public class ScanOutShopThread extends Thread {
             log.info("扫码退货报警REWARDInfo:【扫码退货处理】扫码ID【" + scanId + "】处理耗时【" + (endTime - startTime) + "】");
         } catch (Exception e) {
             log.info("扫码退货报警REWARDERROR:ScanInDealerThread", e);
-            this.updateScanDetailFlag(scanId, 2, msg + e);
+            this.updateScanDetailFlag(scanId, 2, msg);
         } finally {
             countDownLatch.countDown();
         }
@@ -175,27 +177,44 @@ public class ScanOutShopThread extends Thread {
 		 * 查找 es_member_coupon 中是否有此条码对应的，未激活的代金券
 		 * 使用状态;0未使用，3-使用中(冻结)，1已使用,2是已过期；4-未激活；5-退货失效；6-退货(只有赠券占用)；
 		 * 优惠券类型：1-默认原始的；2-赠券；3-代金券
-         * and used_status = 0
+         * and bar_code = "+ barCode + " and recover_flag = 0
+         * TODO
 		 */
         MemberCouponModel memberCouponModel = findMemberCoupon(memberId, scanBatchRecordDetailModel);
+//        MemberCouponModel memberCouponModel = findMemberCouponRelyGoodsGroup(scanBatchRecordDetailModel, memberId);
         
         /**
          * `flow_state` int(11) DEFAULT '0' COMMENT '订单状态：1-正常;2-门店入库退货;3-门店未入库退货;'	1不需要
+         * 追回原扫码入库的代金券
          */
-    	/**
-    	 * 追回原扫码入库的代金券
-    	 */
-        recoverScanInCoupon(sqls, scanBatchRecordDetailModel, memberId, memberCouponModel);
-        
-        /**
-         * 查询扫码入库的记录和时间
-         */
-        ScanBatchRecordDetailModel scanInRecordDetail = this.findScanInRecordDetail(memberCouponModel);
-        if (null == scanInRecordDetail || scanInRecordDetail.getId() < 1) {
-        	msg = "扫码退货报警REWARDERROR【激活代金券扫码入库对应的记录不存在】:扫码ID = " + scanId;
-            log.info(msg);
-            throw new Exception(msg);
+        //查询扫码入库的记录和时间
+        ScanBatchRecordDetailModel scanInRecordDetail = null;
+        if (null != memberCouponModel) {
+            /**
+             * 激活过代金券，追回代金券
+             */
+        	recoverScanInCoupon(sqls, scanBatchRecordDetailModel, memberId, memberCouponModel);
+        	
+        	//查询扫码入库的记录和时间
+            scanInRecordDetail = this.findScanInRecordDetail(memberCouponModel);
+            if (null == scanInRecordDetail || scanInRecordDetail.getId() < 1) {
+                msg = "扫码退货报警REWARDERROR【激活代金券扫码入库对应的记录不存在】:扫码ID = " + scanId;
+                log.info(msg);
+                throw new Exception(msg);
+            }
+        } else {
+            /**
+             * 没有激活过代金券，只需要追回积分和返利
+             * recover_flag = 0 and and show_deal_flag = 1
+             */
+        	scanInRecordDetail = this.findScanInRecordDetail(scanBatchRecordDetailModel);
+        	if (null == scanInRecordDetail || scanInRecordDetail.getId() < 1) {
+                msg = "扫码退货报警REWARDERROR【没有找到对应的扫码入库记录】:扫码ID = " + scanId;
+                log.info(msg);
+                throw new Exception(msg);
+            }
         }
+
         //扫码入库时间
         Date scanInDate = scanInRecordDetail.getCreate_datetime();
         String scanInDateStr = TimeUtil.getStringByDate(scanInDate, "yyyy-MM");
@@ -211,15 +230,41 @@ public class ScanOutShopThread extends Thread {
         	recoverCurMonthShow(sqls, scanBatchRecordDetailModel, memberId, memberIntegralScore, goodsSizeInt, calScanIntegralScore,
     				calScanRebateScore, confIntegralScore, confRebateScore);
         }
-        
+        /**
+         * 将退货对应的扫码记录 recover_flag 更新为1
+         */
+        updateScanInDetailRecoverFlag(sqls, scanInRecordDetail);
         
     }
+    
+    private void updateScanInDetailRecoverFlag(List<OneSql> sqls, ScanBatchRecordDetailModel scanInRecordDetail) {
+    	long scanInId = scanInRecordDetail.getId();
+    	sql = "update scan_batch_record_detail_bak set recover_flag = 1 where id = " + scanInId;
+    	log.info("sql = " + sql);
+        sqls.add(new OneSql(sql, 1, null, "scan_main"));
+		
+	}
+
+	private ScanBatchRecordDetailModel findScanInRecordDetail(ScanBatchRecordDetailModel scanBatchRecordDetailModel) {
+    	long barCode = scanBatchRecordDetailModel.getBar_code();
+        
+        /**激活代金券扫码入库对应记录的主键*/
+        sql = "select * from scan_batch_record_detail_bak "
+        	+ "where bar_code = " + barCode + " and scan_type = 3 and recover_flag = 0 and show_deal_flag = 1 "
+        	+ "order by id desc limit 1";
+        log.info("sql = " + sql);
+        ScanBatchRecordDetailModel scanInRecordDetail = (ScanBatchRecordDetailModel) Data.GetOne("scan_main", sql, null, ScanBatchRecordDetailModel.class);
+        log.info("scanInRecordDetail = " + JSON.toJSONString(scanInRecordDetail));
+        
+		return scanInRecordDetail;
+	}
     
 	private ScanBatchRecordDetailModel findScanInRecordDetail(MemberCouponModel memberCouponModel) {
         /**
          * 检查扫码入库激活的代金券信息
          */
         if (null == memberCouponModel || null == memberCouponModel.getScan_in_id()) {
+        	//TODO
 		    return null;
         }
         /**激活代金券扫码入库对应记录的主键*/
@@ -465,6 +510,39 @@ public class ScanOutShopThread extends Thread {
         log.info("memberCouponModel = " + JSON.toJSONString(memberCouponModel));
 		return memberCouponModel;
 	}
+	
+	public MemberCouponModel findMemberCouponRelyGoodsGroup(ScanBatchRecordDetailModel scanBatchRecordDetailModel, int memberId) {
+		/**商品编号*/
+        String goodsCode = scanBatchRecordDetailModel.getGoods_code();
+        
+        List<Bean> goodsGroupModelList = this.findGoodsGroupModel(goodsCode);
+        //拼接IN查询
+        goodsCode = "'" + goodsCode + "'";
+        if (null != goodsGroupModelList && goodsGroupModelList.size() > 0) {
+            GoodsGroupModel goodsGroupModel = null;
+            for (int i = 0; i < goodsGroupModelList.size(); i++) {
+                goodsGroupModel = (GoodsGroupModel) goodsGroupModelList.get(i);
+                goodsCode += ", '" + goodsGroupModel.getGoods_code() + "'";
+            }
+        }
+        log.info("goodsCode = " + goodsCode);
+
+        sql = "select * from es_member_coupon where member_id = " + memberId + " and seller_id = 1 and goods_sku_sn in (" + goodsCode + ") "
+                + "and coupon_type = 3 and used_status = 4 order by mc_id asc limit 1 ";
+        log.info("sql = " + sql);
+        MemberCouponModel memberCouponModel = (MemberCouponModel) Data.GetOne("shop_trade", sql, null, MemberCouponModel.class);
+        log.info("memberCouponModel = " + JSON.toJSONString(memberCouponModel));
+        return memberCouponModel;
+    }
+
+	public List<Bean> findGoodsGroupModel(String goodsCode) {
+        sql = "select * from es_goods_group "
+            + "where group_code = (select group_code from es_goods_group where goods_code = '" + goodsCode + "' )";
+        log.info("sql = " + sql);
+        List<Bean> goodsGroupModelList = (List<Bean>) Data.Query("shop_goods", sql, null, GoodsGroupModel.class);
+        log.info("goodsGroupModelList = " + JSON.toJSONString(goodsGroupModelList));
+        return goodsGroupModelList;
+    }
 
     /**
      * 按照当前已扫描数量和门店类型，计算扫描此条应获得的返利

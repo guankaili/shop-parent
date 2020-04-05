@@ -88,6 +88,8 @@ public class DataShopAddAStatsWorker extends Worker {
             } finally {
                 workFlag = true;
             }
+        } else {
+            log.info("新增门店柱状图数据报警REWARDTASK:【新增门店柱状图数据】上一轮任务尚未结束，本轮不需要运行");
         }
     }
 

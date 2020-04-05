@@ -120,7 +120,7 @@ public class InitCouponIssueWork extends Worker {
                     num = 200;
                     break;
                 default:
-                    num = 200;
+                    num = 15;
             }
             if (Integer.parseInt(goodsSize) != 0 ) {
                 sql = "INSERT INTO es_coupon_issue " +

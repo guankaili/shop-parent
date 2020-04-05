@@ -120,6 +120,16 @@ public class ScanBatchRecordDetailModel extends Bean {
      */
     private Date create_datetime;
 
+    /**
+     * 预展示处理标志：默认0；1-已处理成功；2-处理失败；
+     */
+    private int show_deal_flag;
+
+    /**
+     * 预展示处理信息
+     */
+    private String show_deal_msg;
+
     public long getId() {
         return id;
     }
@@ -302,5 +312,21 @@ public class ScanBatchRecordDetailModel extends Bean {
 
     public void setCreate_datetime(Date create_datetime) {
         this.create_datetime = create_datetime;
+    }
+
+    public int getShow_deal_flag() {
+        return show_deal_flag;
+    }
+
+    public void setShow_deal_flag(int show_deal_flag) {
+        this.show_deal_flag = show_deal_flag;
+    }
+
+    public String getShow_deal_msg() {
+        return show_deal_msg;
+    }
+
+    public void setShow_deal_msg(String show_deal_msg) {
+        this.show_deal_msg = show_deal_msg;
     }
 }

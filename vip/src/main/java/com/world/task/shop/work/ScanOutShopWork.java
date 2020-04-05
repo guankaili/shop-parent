@@ -1,16 +1,15 @@
 package com.world.task.shop.work;
 
-import com.world.data.mysql.Bean;
-import com.world.data.mysql.Data;
-import com.world.model.dao.task.Worker;
-import com.world.model.shop.ScanBatchRecordDetailModel;
-import com.world.task.shop.thread.ScanInShopThread;
-import com.world.task.shop.thread.ScanOutShopThread;
-
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import com.world.data.mysql.Bean;
+import com.world.data.mysql.Data;
+import com.world.model.dao.task.Worker;
+import com.world.model.shop.ScanBatchRecordDetailModel;
+import com.world.task.shop.thread.ScanOutShopThread;
 
 /**
  *
@@ -45,10 +44,10 @@ public class ScanOutShopWork extends Worker {
                  * -- 1-正常;2-此编码不属于当前的经销商;3-此编码没有对应的经销商;
                  * --  4-该趾口编码属于门店上级经销商,但门店不存在该规格待收货订单或者无待收货产品；
                  * -- 5-条码不属于当前的经销商,门店待收货订单中包含条码',
-                 * --   `flow_state` int(11) DEFAULT '0' COMMENT '订单状态：1-正常;2-门店入库退货;3-门店未入库退货;'   不需要
+                 * --   `flow_state` int(11) DEFAULT '0' COMMENT '订单状态：1-正常;2-门店入库退货;3-门店未入库退货;'   1不需要
                  * --   `scan_type` int(11) DEFAULT NULL COMMENT '扫码种类：1-经销商退货;2-经销商退货扫码;3-门店入库;4-门店退货',
                  */
-                sql = "select * from scan_batch_record_detail_bak where scan_type = 2 limit 1 ";
+                sql = "select * from scan_batch_record_detail where scan_type = 2 and flow_state = 2 and show_deal_flag = 0 limit 1000 ";
                 log.info("sql = " + sql);
                 List<Bean> scanBatchRecordDetailModelList = (List<Bean>) Data.Query("scan_main", sql, null, ScanBatchRecordDetailModel.class);
 

@@ -2,6 +2,7 @@ package com.world.model.shop;
 
 import com.world.data.mysql.Bean;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 public class MemberCouponModel extends Bean {
@@ -70,12 +71,12 @@ public class MemberCouponModel extends Bean {
     /**
      * 优惠券面额
      */
-    private Double coupon_price;
+    private BigDecimal coupon_price;
 
     /**
      * 优惠券门槛金额
      */
-    private Double coupon_threshold_price;
+    private BigDecimal coupon_threshold_price;
 
     /**
      * 使用起始时间
@@ -100,6 +101,12 @@ public class MemberCouponModel extends Bean {
      * xian 2020-03-21
      */
     private long bar_code;
+    //扫码入库ID激活
+    private long scan_in_id;
+    //扫码退货ID追回
+    private long scan_out_id;
+    //追回标记：默认0；1-已追回；
+    private long recover_flag;
 
     /**
      * 绑定商品id本期按照商品编号=es_goods_sku sn字段
@@ -172,6 +179,38 @@ public class MemberCouponModel extends Bean {
         this.busi_id = busi_id;
     }
 
+    public Long getScan_in_id() {
+        return scan_in_id;
+    }
+
+    public void setScan_in_id(Long scan_in_id) {
+        this.scan_in_id = scan_in_id;
+    }
+
+    public Long getScan_out_id() {
+        return scan_out_id;
+    }
+
+    public void setScan_out_id(Long scan_out_id) {
+        this.scan_out_id = scan_out_id;
+    }
+
+    public void setScan_in_id(long scan_in_id) {
+        this.scan_in_id = scan_in_id;
+    }
+
+    public void setScan_out_id(long scan_out_id) {
+        this.scan_out_id = scan_out_id;
+    }
+
+    public long getRecover_flag() {
+        return recover_flag;
+    }
+
+    public void setRecover_flag(long recover_flag) {
+        this.recover_flag = recover_flag;
+    }
+
     public Integer getItem_id() {
         return item_id;
     }
@@ -212,19 +251,19 @@ public class MemberCouponModel extends Bean {
         this.title = title;
     }
 
-    public Double getCoupon_price() {
+    public BigDecimal getCoupon_price() {
         return coupon_price;
     }
 
-    public void setCoupon_price(Double coupon_price) {
+    public void setCoupon_price(BigDecimal coupon_price) {
         this.coupon_price = coupon_price;
     }
 
-    public Double getCoupon_threshold_price() {
+    public BigDecimal getCoupon_threshold_price() {
         return coupon_threshold_price;
     }
 
-    public void setCoupon_threshold_price(Double coupon_threshold_price) {
+    public void setCoupon_threshold_price(BigDecimal coupon_threshold_price) {
         this.coupon_threshold_price = coupon_threshold_price;
     }
 

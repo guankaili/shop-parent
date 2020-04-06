@@ -112,7 +112,7 @@ public class ScanOutShopThread extends Thread {
          * scan_in_expect_num 扫码退货数量
          * 积分和返利扫码条数相同，取1个即可 = 当前已扫码数量
          */
-        MemberIntegralModel memberIntegralScore = findMemberIntegralScore(scanBatchRecordDetailModel);
+        MemberIntegralModel memberIntegralScore = findMemberIntegralScore(memberId);
         int curScanInExpectNum = 0;
         if (null == memberIntegralScore) {
             msg = "扫码退货报警REWARDERROR【积分和返利账户信息不存在】";
@@ -362,11 +362,11 @@ public class ScanOutShopThread extends Thread {
 		return shopConfTaskMModel;
 	}
 
-	public MemberIntegralModel findMemberIntegralScore(ScanBatchRecordDetailModel scanBatchRecordDetailModel) {
+	public MemberIntegralModel findMemberIntegralScore(int memberId) {
 		//所属门店ID
         int shopId = scanBatchRecordDetailModel.getShop_id();
 		MemberIntegralModel memberIntegralScore;
-		sql = "select * from es_member_integral where shop_id = '" + shopId + "' and integral_type = 5 ";
+		sql = "select * from es_member_integral where member_id = " + memberId + " and integral_type = 5 ";
         log.info("sql = " + sql);
         memberIntegralScore = (MemberIntegralModel) Data.GetOne("shop_trade", sql, null, MemberIntegralModel.class);
         log.info("memberIntegralScore = " + JSON.toJSONString(memberIntegralScore));

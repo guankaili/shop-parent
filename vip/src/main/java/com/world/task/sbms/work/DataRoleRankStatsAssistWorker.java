@@ -60,7 +60,7 @@ public class DataRoleRankStatsAssistWorker extends Worker {
                                 backends.forEach(item2 -> {
                                     if (item1.getUserId().equals(item2.getUserId())) {
                                         //判断权限
-                                        if (item2.getRoleId().equals(RELO_ID)) {
+                                        if (!StringUtil.isEmpty(item2.getRoleId())&&item2.getRoleId().equals(RELO_ID)) {
                                             item1.setRoleType(2);
                                         } else {
                                             item1.setRoleType(3);

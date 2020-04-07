@@ -47,7 +47,7 @@ public class WorkHomeMStats extends Bean implements Serializable {
     /**
     * 省份编号
     */    
-    private Integer provinceCode;
+    private Long provinceCode;
     /**
     * 省份名称
     */    
@@ -55,7 +55,7 @@ public class WorkHomeMStats extends Bean implements Serializable {
     /**
     * 城市编号
     */    
-    private Integer cityCode;
+    private Long cityCode;
     /**
     * 城市名称
     */    
@@ -63,7 +63,7 @@ public class WorkHomeMStats extends Bean implements Serializable {
     /**
     * 区域编号
     */    
-    private Integer areaCode;
+    private Long areaCode;
     /**
     * 区域名称
     */    

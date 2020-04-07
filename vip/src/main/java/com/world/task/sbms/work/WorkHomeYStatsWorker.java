@@ -70,6 +70,7 @@ public class WorkHomeYStatsWorker extends Worker {
                     if(!CollectionUtils.isEmpty(cquantityMs)){
                         List<WorkHomeYStats> cquantityYCopy = ObjectConversion.copy(cquantityMs, WorkHomeYStats.class);
                         workHomeStats.forEach(item1 -> {
+                            item1.setSignShopTaskCquantityY(new Long(0));
                             cquantityYCopy.forEach(item2 -> {
                                 if(item1.getShopId().equals(item2.getShopId())){
                                     Long signShopTaskCquantityY = item2.getSignShopTaskCquantityY() != null ? item2.getSignShopTaskCquantityY() : 0;

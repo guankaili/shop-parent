@@ -18,6 +18,8 @@ import com.world.task.sbms.work.DataShopScanOutMYStatsWorker;
 import com.world.task.sbms.work.DataShopSignBuyAStatsWorker;
 import com.world.task.sbms.work.WorkHomeMStatsWorker;
 import com.world.task.sbms.work.WorkHomeYStatsWorker;
+import com.world.task.shop.work.ConponStatusWork;
+import com.world.task.shop.work.PanicBuyingShopWork;
 import com.world.task.shop.work.ScanInShopWork;
 import com.world.task.shop.work.ScanOutShopWork;
 
@@ -79,8 +81,13 @@ public class AutoFactory extends TaskFactory {
         //数据模块 -- 门店年度任务量统计
         work(new WorkHomeYStatsWorker("WorkHomeYStatsWorker", "数据模块，门店年度任务量统计"), 1 * 60 * 1000);
 
+        //门店优惠券 -- 根据过期时间失效掉优惠券
+        work(new ConponStatusWork("ConponStatusWork", "门店优惠券，根据过期时间失效掉优惠券"), 1 * 60 * 1000);
 
-        
+        //门店状态  -- 两个月发生抢购行为变为抢购门店
+        work(new PanicBuyingShopWork("PanicBuyingShopWork", "抢购门店状态，两个月发生抢购行为变为抢购门店"), 1 * 60 * 1000);
+
+
         /**
          * 预展示扫码入库计算
          * 预展示扫码退货计算
@@ -89,10 +96,9 @@ public class AutoFactory extends TaskFactory {
         work(new ScanOutShopWork("ScanOutShopWork", "预展示扫码退货计算"), 3 * 1000);
 
     }
-    
+
     public static void main(String[] args) {
 
 
-       
     }
 }

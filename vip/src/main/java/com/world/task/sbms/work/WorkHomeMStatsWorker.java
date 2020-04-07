@@ -74,6 +74,8 @@ public class WorkHomeMStatsWorker extends Worker {
                                 if(item1.getShopId().equals(item2.getShopId())){
                                     Long signShopTaskCquantityM = item2.getSignShopTaskCquantityM() != null ? item2.getSignShopTaskCquantityM() : 0;
                                     item1.setSignShopTaskCquantityM(signShopTaskCquantityM);
+                                }else {
+                                    item1.setSignShopTaskCquantityM(0L);
                                 }
                             });
                         });

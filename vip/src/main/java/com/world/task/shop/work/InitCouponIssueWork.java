@@ -1,5 +1,8 @@
 package com.world.task.shop.work;
 
+import java.util.List;
+import java.util.Map;
+
 import com.alibaba.fastjson.JSON;
 import com.world.data.mysql.Bean;
 import com.world.data.mysql.Data;
@@ -9,20 +12,18 @@ import com.world.model.shop.ShopConfIntegralModel;
 import com.world.model.shop.ShopConfRebateModel;
 import com.world.util.GoodsNameSplitUtil;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 public class InitCouponIssueWork extends Worker {
     /**
      *
      */
     private static final long serialVersionUID = 1L;
     /*查询SQL*/
-    private String sql = "";
+    @SuppressWarnings("unused")
+	private String sql = "";
 
     /*此轮定时任务结束标识*/
-    private static boolean workFlag = true;
+    @SuppressWarnings("unused")
+	private static boolean workFlag = true;
 
     public InitCouponIssueWork(String name, String des) {
         super(name, des);
@@ -126,7 +127,7 @@ public class InitCouponIssueWork extends Worker {
                 sql = "INSERT INTO es_coupon_issue " +
                         "(issue_title, issue_rule, goods_size, issue_type, issue_amount," +
                         "seller_id,seller_name, issue_start_time, issue_end_time, coupon_valid_day, is_usable) " +
-                        "VALUES ('扫码入库后 专享代金券','" + skuSn + "'," + goodsSize + ",3,"+num+",1,'森麒麟自营店','2020-03-01','2020-04-30',90,1)";
+                        "VALUES ('扫码入库后 专享代金券','" + skuSn + "'," + goodsSize + ",3,"+num+",1,'森麒麟自营店','2020-03-31','2099-12-31',90,1)";
                 log.info("insert...sql = " + sql);
                 Data.Insert("shop_member", sql, null);
             }

@@ -115,11 +115,11 @@ public class ScanOutShopThread extends Thread {
         /**
          * 按照当前已扫描数量和门店类型，计算扫描此条应获得的积分
          */
-        int calScanIntegralScore = scanUtil.produceScanIntegralScore(curScanInExpectNum, shopConfTaskMModel, shopType, goodsSizeInt);
+        int calScanIntegralScore = scanUtil.produceScanIntegralScore(curScanInExpectNum - 1, shopConfTaskMModel, shopType, goodsSizeInt);
         /**
          * 按照当前已扫描数量和门店类型，计算扫描此条应获得的返利
          */
-        int calScanRebateScore = scanUtil.produceScanRebateScore(curScanInExpectNum, shopConfTaskMModel, shopType, goodsSizeInt);
+        int calScanRebateScore = scanUtil.produceScanRebateScore(curScanInExpectNum - 1, shopConfTaskMModel, shopType, goodsSizeInt);
 
         
         /**

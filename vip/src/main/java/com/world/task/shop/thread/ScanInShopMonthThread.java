@@ -84,6 +84,10 @@ public class ScanInShopMonthThread extends Thread {
             	return;
             }
             
+            /**
+             * 先删除已有数据，防止重复计算
+             */
+            
             /**月结循环处理*/
             this.calMonth(scanBatchRecordDetailModelList, shopConfTaskMModel, shopType);
 

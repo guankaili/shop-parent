@@ -89,13 +89,13 @@ public class WorkHomeYStatsWorker extends Worker {
                         });
                     }
                     //3、查询签约门店完成任务的门店数-年度
-                    String ncSql = "SELECT DISTINCT(t.shop_id) shopId FROM scan_batch_record_detail t " +
+                    String ncSql = "SELECT DISTINCT(t.shop_id) shopId,t.dealer_code dealerCode FROM scan_batch_record_detail t " +
                             "WHERE t.scan_type = 3 AND DATE_FORMAT(t.create_datetime,'%Y')=DATE_FORMAT(CURDATE(),'%Y') " +
                             "AND t.shop_id in ("+shopId+") ";
-                    List<Bean> nquantityMs = (List<Bean>)Data.Query("scan_main",ncSql,param.toArray(), WorkHomeYStats.class);
-                    if(!CollectionUtils.isEmpty(nquantityMs)){
+                    List<Bean> nquantityYs = Data.Query("scan_main",ncSql,param.toArray(), WorkHomeYStats.class);
+                    if(!CollectionUtils.isEmpty(nquantityYs)){
                         //根据经销商分组获取此经销商下完成的店的数量
-                        List<WorkHomeYStats> workHomeStatsC = ObjectConversion.copy(nquantityMs, WorkHomeYStats.class);
+                        List<WorkHomeYStats> workHomeStatsC = ObjectConversion.copy(nquantityYs, WorkHomeYStats.class);
                         Map<String,List<WorkHomeYStats>> groupByC = workHomeStatsC.stream().collect(Collectors.groupingBy(WorkHomeYStats::getDealerCode));
                         if(groupByC != null && groupByC.size() > 0){
                             workHomeStats.forEach(item1 -> {

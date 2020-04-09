@@ -55,11 +55,11 @@ public class DataShopAStatsWorker extends Worker {
                         "COUNT( t.shop_status = 6 OR NULL ) AS shopPanicQuantity, " +  //抢购门店
                         "COUNT( date_format( t.contract_time, '%Y-%m' ) = DATE_FORMAT( now(), '%Y-%m' ) OR NULL ) AS shopAddQuantity, " +   //新增门店
                         "COUNT( t.shop_status = 6 AND date_format( t.contract_time, '%Y-%m' ) = DATE_FORMAT( now(), '%Y-%m' ) OR NULL ) AS shopAddPanicQuantity, " +  //新增抢购门店
-                        "COUNT( t.shop_type = 1 OR NULL ) AS ctsARate, " +
-                        "COUNT( t.shop_type = 2 OR NULL ) AS ctsRate, " +
+                        "COUNT( t.shop_type = 1 OR NULL ) AS cpsRate, " +
+                        "COUNT( t.shop_type = 2 OR NULL ) AS ccsRate, " +
                         "COUNT( t.shop_type = 3 OR NULL ) AS ccsARate, " +
-                        "COUNT( t.shop_type = 4 OR NULL ) AS ccsRate, " +
-                        "COUNT( t.shop_type = 5 OR NULL ) AS cpsRate " +
+                        "COUNT( t.shop_type = 4 OR NULL ) AS ctsRate, " +
+                        "COUNT( t.shop_type = 5 OR NULL ) AS ctsARate " +
                         "FROM " +
                         "es_shop_detail t " +
                         "WHERE (t.shop_status = 5 OR t.shop_status = 6 OR t.shop_status = 7) "+

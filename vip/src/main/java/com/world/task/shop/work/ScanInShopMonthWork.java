@@ -4,16 +4,17 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
 import com.world.data.mysql.Bean;
 import com.world.data.mysql.Data;
 import com.world.model.dao.task.Worker;
 import com.world.model.shop.ScanBatchRecordDetailModel;
-import com.world.task.shop.thread.ScanInShopThread;
+import com.world.task.shop.thread.ScanInShopMonthThread;
 
 /**
  *
  */
-public class ScanInShopWork extends Worker {
+public class ScanInShopMonthWork extends Worker {
     /**
      *
      */
@@ -24,7 +25,7 @@ public class ScanInShopWork extends Worker {
     /*此轮定时任务结束标识*/
     private static boolean workFlag = true;
 
-    public ScanInShopWork(String name, String des) {
+    public ScanInShopMonthWork(String name, String des) {
         super(name, des);
     }
 
@@ -41,7 +42,7 @@ public class ScanInShopWork extends Worker {
                 /**
                  *
                  */
-                sql = "select * from scan_batch_record_detail where scan_type = 3 and show_deal_flag = 0 limit 1000 ";
+                sql = "select distinct shop_id from scan_batch_record_detail where scan_type = 3 and flow_state = 1";
                 log.info("sql = " + sql);
                 List<Bean> scanBatchRecordDetailModelList = (List<Bean>) Data.Query("scan_main", sql, null, ScanBatchRecordDetailModel.class);
 
@@ -53,8 +54,8 @@ public class ScanInShopWork extends Worker {
                     ScanBatchRecordDetailModel scanBatchRecordDetailModel = null;
                     for (int i = 0; i < scanBatchRecordDetailModelList.size(); i++) {
                         scanBatchRecordDetailModel = (ScanBatchRecordDetailModel) scanBatchRecordDetailModelList.get(i);
-                        ScanInShopThread scanInShopThread = new ScanInShopThread(scanBatchRecordDetailModel, countDownLatch);
-                        executorService.execute(scanInShopThread);
+                        ScanInShopMonthThread scanInShopMonthThread = new ScanInShopMonthThread(scanBatchRecordDetailModel, countDownLatch);
+                        executorService.execute(scanInShopMonthThread);
                     }
                     countDownLatch.await();
                     /*关闭线程池*/
@@ -77,7 +78,7 @@ public class ScanInShopWork extends Worker {
     }
 
     public static void main(String[] args) {
-        ScanInShopWork scanInShopWork = new ScanInShopWork("", "");
+        ScanInShopMonthWork scanInShopWork = new ScanInShopMonthWork("", "");
         for (int i = 0; i < 1; i++) {
             scanInShopWork.run();
         }

@@ -3,7 +3,6 @@ package com.world.task.sbms.work;
 import com.world.data.mysql.Bean;
 import com.world.data.mysql.Data;
 import com.world.model.dao.task.Worker;
-import com.world.model.sbms.WorkHomeMStats;
 import com.world.model.sbms.WorkHomeYStats;
 import com.world.task.sbms.thread.WorkHomeYStatsThread;
 import com.world.util.ObjectConversion;
@@ -96,8 +95,8 @@ public class WorkHomeYStatsWorker extends Worker {
                     List<Bean> nquantityMs = (List<Bean>)Data.Query("scan_main",ncSql,param.toArray(), WorkHomeYStats.class);
                     if(!CollectionUtils.isEmpty(nquantityMs)){
                         //根据经销商分组获取此经销商下完成的店的数量
-                        List<WorkHomeMStats> workHomeStatsC = ObjectConversion.copy(nquantityMs, WorkHomeMStats.class);
-                        Map<String,List<WorkHomeMStats>> groupByC = workHomeStatsC.stream().collect(Collectors.groupingBy(WorkHomeMStats::getDealerCode));
+                        List<WorkHomeYStats> workHomeStatsC = ObjectConversion.copy(nquantityMs, WorkHomeYStats.class);
+                        Map<String,List<WorkHomeYStats>> groupByC = workHomeStatsC.stream().collect(Collectors.groupingBy(WorkHomeYStats::getDealerCode));
                         if(groupByC != null && groupByC.size() > 0){
                             workHomeStats.forEach(item1 -> {
                                 //未完成任务的门店数

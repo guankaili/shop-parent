@@ -6,7 +6,7 @@
           driverClassName: "com.mysql.cj.jdbc.Driver",
           userName: "root",
           pwd: "Godlike_110",
-          ip: "172.16.120.88:3306"
+          ip: "172.16.122.16:3306"
         },
        {
         db: "shop_goods",
@@ -14,7 +14,7 @@
         driverClassName: "com.mysql.cj.jdbc.Driver",
         userName: "root",
         pwd: "Godlike_110",
-        ip: "172.16.120.88:3306"
+        ip: "172.16.122.16:3306"
        },
       {
         db: "shop_member",
@@ -22,7 +22,7 @@
         driverClassName: "com.mysql.cj.jdbc.Driver",
         userName: "root",
         pwd: "Godlike_110",
-        ip: "172.16.120.88:3306"
+        ip: "172.16.122.16:3306"
       },
        {
           db: "scan_main",
@@ -30,7 +30,7 @@
           driverClassName: "com.mysql.cj.jdbc.Driver",
           userName: "root",
           pwd: "Godlike_110",
-          ip: "172.16.120.88:3306"
+          ip: "172.16.122.16:3306"
        },
       {
         db: "qly",
@@ -38,7 +38,7 @@
         driverClassName: "com.mysql.cj.jdbc.Driver",
         userName: "root",
         pwd: "Godlike_110",
-        ip: "172.16.120.88:3306"
+        ip: "172.16.122.16:3306"
       },
       {
         db: "sbms_main",
@@ -46,7 +46,7 @@
         driverClassName: "com.mysql.cj.jdbc.Driver",
         userName: "root",
         pwd: "Godlike_110",
-        ip: "172.16.120.88:3306"
+        ip: "172.16.122.16:3306"
       },
       {
         db: "weilai_backend",
@@ -54,7 +54,7 @@
         driverClassName: "com.mysql.cj.jdbc.Driver",
         userName: "root",
         pwd: "Godlike_110",
-        ip: "172.16.120.88:3306"
+        ip: "172.16.122.16:3306"
       },
       {
         db: "weilai_uaa",
@@ -62,7 +62,7 @@
         driverClassName: "com.mysql.cj.jdbc.Driver",
         userName: "root",
         pwd: "Godlike_110",
-        ip: "172.16.120.88:3306"
+        ip: "172.16.122.16:3306"
       }
     ]
 }

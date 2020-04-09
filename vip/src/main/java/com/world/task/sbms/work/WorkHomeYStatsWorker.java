@@ -3,6 +3,7 @@ package com.world.task.sbms.work;
 import com.world.data.mysql.Bean;
 import com.world.data.mysql.Data;
 import com.world.model.dao.task.Worker;
+import com.world.model.sbms.WorkHomeMStats;
 import com.world.model.sbms.WorkHomeYStats;
 import com.world.task.sbms.thread.WorkHomeYStatsThread;
 import com.world.util.ObjectConversion;
@@ -11,9 +12,11 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 /**
  * @author guankaili
@@ -50,13 +53,20 @@ public class WorkHomeYStatsWorker extends Worker {
                 if(!CollectionUtils.isEmpty(list)){
                     List<WorkHomeYStats> workHomeStats = ObjectConversion.copy(list, WorkHomeYStats.class);
                     //获取签约门店数==年度
-                    Integer signShopQuantityY = list.size();
                     //获取shopId集合
                     List<Integer> shopIds = new ArrayList<>();
-                    workHomeStats.forEach(item -> {
-                        item.setSignShopQuantityY(signShopQuantityY);
-                        shopIds.add(item.getShopId());
-                    });
+                    //根据经销商分组
+                    Map<String,List<WorkHomeYStats>> groupBy = workHomeStats.stream().collect(Collectors.groupingBy(WorkHomeYStats::getDealerCode));
+                    if(groupBy != null && groupBy.size() > 0){
+                        workHomeStats.forEach(item -> {
+                            groupBy.forEach((k,v) -> {
+                                if(item.getDealerCode().equals(k)){
+                                    item.setSignShopQuantityY(v.size());
+                                }
+                            });
+                            shopIds.add(item.getShopId());
+                        });
+                    }
                     //list转数组
                     Integer[] shopIdArr = shopIds.stream().toArray(Integer[]::new);
                     //拼接in条件sql
@@ -85,11 +95,19 @@ public class WorkHomeYStatsWorker extends Worker {
                             "AND t.shop_id in ("+shopId+") ";
                     List<Bean> nquantityMs = (List<Bean>)Data.Query("scan_main",ncSql,param.toArray(), WorkHomeYStats.class);
                     if(!CollectionUtils.isEmpty(nquantityMs)){
-                        workHomeStats.forEach(item1 -> {
-                            //未完成任务的门店数
-                            Integer noCompleteCount = signShopQuantityY - nquantityMs.size();
-                            item1.setSignShopTaskNquantityY(Long.valueOf(noCompleteCount.toString()));
-                        });
+                        //根据经销商分组获取此经销商下完成的店的数量
+                        List<WorkHomeMStats> workHomeStatsC = ObjectConversion.copy(nquantityMs, WorkHomeMStats.class);
+                        Map<String,List<WorkHomeMStats>> groupByC = workHomeStatsC.stream().collect(Collectors.groupingBy(WorkHomeMStats::getDealerCode));
+                        if(groupByC != null && groupByC.size() > 0){
+                            workHomeStats.forEach(item1 -> {
+                                //未完成任务的门店数
+                                groupByC.forEach((k,v) -> {
+                                    Integer noCompleteCount = item1.getSignShopQuantityY() - v.size();
+                                    item1.setSignShopTaskNquantityY(Long.valueOf(noCompleteCount.toString()));
+                                });
+
+                            });
+                        }
                     }
                     log.info("任务名称【WorkHomeYStatsWorker】开始执行.此轮需要执行【" + workHomeStats.size() + "】条数据任务");
                     //1、清除表数据

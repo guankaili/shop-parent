@@ -11,9 +11,11 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 /**
  * @author guankaili
@@ -49,13 +51,20 @@ public class WorkHomeMStatsWorker extends Worker {
                 if(!CollectionUtils.isEmpty(list)){
                     List<WorkHomeMStats> workHomeStats = ObjectConversion.copy(list, WorkHomeMStats.class);
                     //获取签约门店数==月度
-                    Integer signShopQuantityM = list.size();
                     //获取shopId集合
                     List<Integer> shopIds = new ArrayList<>();
-                    workHomeStats.forEach(item -> {
-                        item.setSignShopQuantityM(signShopQuantityM);
-                        shopIds.add(item.getShopId());
-                    });
+                    //根据经销商分组
+                    Map<String,List<WorkHomeMStats>> groupBy = workHomeStats.stream().collect(Collectors.groupingBy(WorkHomeMStats::getDealerCode));
+                    if(groupBy != null && groupBy.size() > 0){
+                        workHomeStats.forEach(item -> {
+                            groupBy.forEach((k,v) -> {
+                                if(item.getDealerCode().equals(k)){
+                                    item.setSignShopQuantityM(v.size());
+                                }
+                            });
+                            shopIds.add(item.getShopId());
+                        });
+                    }
                     //list转数组
                     Integer[] shopIdArr = shopIds.stream().toArray(Integer[]::new);
                     //拼接in条件sql
@@ -79,16 +88,24 @@ public class WorkHomeMStatsWorker extends Worker {
                         });
                     }
                     //3、查询签约门店完成任务的门店数-月度
-                    String ncSql = "SELECT DISTINCT(t.shop_id) shopId FROM scan_batch_record_detail t " +
+                    String ncSql = "SELECT DISTINCT(t.shop_id) shopId,t.dealer_code dealerCode FROM scan_batch_record_detail t " +
                             "WHERE t.scan_type = 3 AND DATE_FORMAT(t.create_datetime,'%Y-%m')=DATE_FORMAT(CURDATE(),'%Y-%m') " +
                             "AND t.shop_id in ("+shopId+")";
                     List<Bean> nquantityMs = (List<Bean>)Data.Query("scan_main",ncSql,param.toArray(), WorkHomeMStats.class);
                     if(!CollectionUtils.isEmpty(nquantityMs)){
-                        workHomeStats.forEach(item1 -> {
-                            //未完成任务的门店数
-                            Integer noCompleteCount = signShopQuantityM - nquantityMs.size();
-                            item1.setSignShopTaskNquantityM(Long.valueOf(noCompleteCount.toString()));
-                        });
+                        //根据经销商分组获取此经销商下完成的店的数量
+                        List<WorkHomeMStats> workHomeStatsC = ObjectConversion.copy(nquantityMs, WorkHomeMStats.class);
+                        Map<String,List<WorkHomeMStats>> groupByC = workHomeStatsC.stream().collect(Collectors.groupingBy(WorkHomeMStats::getDealerCode));
+                        if(groupByC != null && groupByC.size() > 0){
+                            workHomeStats.forEach(item1 -> {
+                                //未完成任务的门店数
+                                groupByC.forEach((k,v) -> {
+                                    Integer noCompleteCount = item1.getSignShopQuantityM() - v.size();
+                                    item1.setSignShopTaskNquantityM(Long.valueOf(noCompleteCount.toString()));
+                                });
+
+                            });
+                        }
                     }
                     log.info("任务名称【WorkHomeMStatsWorker】开始执行.此轮需要执行【" + workHomeStats.size() + "】条数据任务");
                     //1、清除表数据

@@ -56,10 +56,10 @@ public class WorkHomeMStatsThread extends Thread{
             param.add(workHomeMStats.getAreaName());
             param.add(workHomeMStats.getBrandCode());
             param.add(workHomeMStats.getBrandName());
-            param.add(workHomeMStats.getSignShopQuantityM());
-            param.add(workHomeMStats.getSignShopTaskQuantityM());
-            param.add(workHomeMStats.getSignShopTaskCquantityM());
-            param.add(workHomeMStats.getSignShopTaskNquantityM());
+            param.add(workHomeMStats.getSignShopQuantityM() != null ? workHomeMStats.getSignShopQuantityM() : 0);
+            param.add(workHomeMStats.getSignShopTaskQuantityM() != null ? workHomeMStats.getSignShopTaskQuantityM() : 0);
+            param.add(workHomeMStats.getSignShopTaskCquantityM() != null ? workHomeMStats.getSignShopTaskCquantityM() : 0);
+            param.add(workHomeMStats.getSignShopTaskNquantityM() != null ? workHomeMStats.getSignShopTaskNquantityM() : 0);
             param.add(0);
             param.add(DateUtil.date());
             sqls.add(new OneSql(sql, 1, param.toArray(), "sbms_main"));

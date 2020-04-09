@@ -56,7 +56,7 @@ public class ScanOutShopThread extends Thread {
              * sqls别轻易使用
              * `flow_state` int(11) DEFAULT '0' COMMENT '订单状态：1-正常;2-门店入库退货;3-门店未入库退货;'	1不需要
              */
-            this.scanOutDeal(scanBatchRecordDetailModel, sqls);
+            this.scanOutDeal(sqls);
             //更新扫码明细表数据状态
             this.updateScanDetailFlagTS(sqls, scanId, 1, "扫码退货处理成功");
             
@@ -78,7 +78,7 @@ public class ScanOutShopThread extends Thread {
         }
     }
     
-    private void scanOutDeal(ScanBatchRecordDetailModel scanBatchRecordDetailModel, List<OneSql> sqls) throws Exception {
+    private void scanOutDeal(List<OneSql> sqls) throws Exception {
     	//门店ID
         int shopId = scanBatchRecordDetailModel.getShop_id();
         /**

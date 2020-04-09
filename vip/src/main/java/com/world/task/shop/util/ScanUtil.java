@@ -4,21 +4,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import com.world.model.shop.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.alibaba.fastjson.JSON;
 import com.world.data.mysql.Bean;
 import com.world.data.mysql.Data;
-import com.world.model.shop.GoodsGroupModel;
-import com.world.model.shop.MemberCouponModel;
-import com.world.model.shop.MemberIntegralModel;
-import com.world.model.shop.OrderModel;
-import com.world.model.shop.ScanBatchRecordDetailModel;
-import com.world.model.shop.ShopConfIntegralModel;
-import com.world.model.shop.ShopConfRebateModel;
-import com.world.model.shop.ShopConfTaskMModel;
-import com.world.model.shop.ShopDetailModel;
 import com.world.task.shop.thread.ScanInShopThread;
 import com.world.timer.DateUtilsEx;
 import com.world.util.GoodsNameSplitUtil;
@@ -49,14 +41,14 @@ public class ScanUtil {
 	* @throws
 	 */
 	@SuppressWarnings("deprecation")
-	public List<Bean> listScanBatchRecordDetail(int shopId, String settleMonth) throws Exception {
+	public List<Bean> listScanBatchRecordDetail(int shopId, String calMonth) throws Exception {
 		String sql = "";
 		String msg = "";
 		
 		//拼接当前月的开始和结束时间，结束时间为计算月的最后1天
-		String startDate = settleMonth + "-01 00:00:00";
+		String startDate = calMonth + "-01 00:00:00";
 		String endDate = DateUtilsEx.formatDate(DateUtilsEx.getLastDayOfMonth(
-									new Date(settleMonth.replaceAll("-", "/") + "/01")), "yyyy-MM-dd") + " 23:59:59";
+									new Date(calMonth.replaceAll("-", "/") + "/01")), "yyyy-MM-dd") + " 23:59:59";
 		
 		/**
 		 * `scan_type` int(11) DEFAULT NULL COMMENT '扫码种类：1-经销商出库;2-经销商退货扫码;3-门店入库;4-门店出库',
@@ -500,5 +492,14 @@ public class ScanUtil {
         
 		return scanInRecordDetail;
 	}
-	
+
+	public ScanTaskMModel findScanTaskMModel() throws Exception {
+	    String sql = "";
+
+        sql = "select * from scan_task_m where task_name = 'ScanInShopMonthWork' and open_flag = 1 and cal_flag = 0 and execute_datetime <= now() ";
+        log.info("sql = " + sql);
+        ScanTaskMModel scanTaskMModel = (ScanTaskMModel) Data.GetOne("shop_xxl_job", sql, null, ScanTaskMModel.class);
+
+        return scanTaskMModel;
+    }
 }

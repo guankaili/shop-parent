@@ -6,7 +6,7 @@ public class OrderModel extends Bean {
     private static final long serialVersionUID = 1L;
 
     /** 主键ID */
-    private Integer order_id;
+    private int order_id;
 
     /** * 交易编号 */
     private String trade_sn;
@@ -14,11 +14,11 @@ public class OrderModel extends Bean {
     /** 订单编号 */
     private String sn;
 
-    public Integer getOrder_id() {
+    public int getOrder_id() {
         return order_id;
     }
 
-    public void setOrder_id(Integer order_id) {
+    public void setOrder_id(int order_id) {
         this.order_id = order_id;
     }
 

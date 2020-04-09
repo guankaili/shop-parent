@@ -56,7 +56,7 @@ public class ScanInShopThread extends Thread {
              * 扫码入库处理
              * sqls别轻易使用
              */
-            this.scanInDeal(scanBatchRecordDetailModel, sqls);
+            this.scanInDeal(sqls);
             //更新扫码明细表数据状态
             this.updateScanDetailFlagTS(sqls, scanId, 1, "扫码入库处理成功");
             
@@ -80,11 +80,10 @@ public class ScanInShopThread extends Thread {
 
     /**
      * 扫码入库处理
-     * @param scanBatchRecordDetailModel
      * @param sqls
      * @throws Exception
      */
-    public void scanInDeal(ScanBatchRecordDetailModel scanBatchRecordDetailModel, List<OneSql> sqls) throws Exception {
+    public void scanInDeal(List<OneSql> sqls) throws Exception {
         /**扫码明细表主键*/
         long scanId = scanBatchRecordDetailModel.getId();
         /**扫码条码*/
@@ -298,11 +297,11 @@ public class ScanInShopThread extends Thread {
          * 订单相关数量信息
          */
         long refundNum = orderItemsModel.getRefund_num();   //退货数量
-//        int shipNum = orderItemsModel.getShip_num();   //退货数量
+        long shipNum = orderItemsModel.getShip_num();   //发货数量
         long num = orderItemsModel.getNum(); //订单原数量
-        long scanInNum = orderItemsModel.getScan_in_num();
+        long scanInNum = orderItemsModel.getScan_in_num();  //扫码入库数量
 
-        if ((scanInNum + 1 + refundNum) == num) {
+        if ((scanInNum + 1 + refundNum) == num && (scanInNum + 1) == shipNum) {
             /*设置订单状态为完成*/
             sql = "update es_order set order_status = 'COMPLETE' where order_id = " + orderId;
             log.info("sql = " + sql);

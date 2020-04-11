@@ -1,7 +1,12 @@
 package com.world.model.shop;
 
 import com.world.data.mysql.Bean;
+import lombok.Data;
 
+import java.math.BigDecimal;
+import java.util.Date;
+
+@Data
 public class OrderItemsModel extends Bean {
     private static final long serialVersionUID = 1L;
 
@@ -26,6 +31,9 @@ public class OrderItemsModel extends Bean {
     /**退货数量*/
     private long refund_num;
 
+    /**已发货退货数量*/
+    private long ship_refund_num;
+
     /**交易编号*/
     private String trade_sn;
 
@@ -39,7 +47,7 @@ public class OrderItemsModel extends Bean {
     private String name;
 
     /**销售金额*/
-    private Double price;
+    private BigDecimal price;
 
     /**分类ID*/
     private Integer cat_id;
@@ -98,6 +106,9 @@ public class OrderItemsModel extends Bean {
 
     /**配送-经销商名称*/
     private String ship_dealer_name;
+
+    private Date payment_time;
+
 
     public Integer getItem_id() {
         return item_id;
@@ -177,14 +188,6 @@ public class OrderItemsModel extends Bean {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public Double getPrice() {
-        return price;
-    }
-
-    public void setPrice(Double price) {
-        this.price = price;
     }
 
     public Integer getCat_id() {

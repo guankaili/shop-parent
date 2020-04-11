@@ -34,6 +34,12 @@ public class OrderItemsModel extends Bean {
     /**已发货退货数量*/
     private long ship_refund_num;
 
+    /**扫码入库数量*/
+    private long scan_in_num;
+
+    /**扫码出库数量*/
+    private long scan_return_num;
+
     /**交易编号*/
     private String trade_sn;
 
@@ -94,12 +100,6 @@ public class OrderItemsModel extends Bean {
 
     /**门店名称*/
     private String shop_name;
-
-    /**扫码入库数量*/
-    private long scan_in_num;
-
-    /**扫码出库数量*/
-    private Integer scan_return_num;
 
     /**配送-经销商编号*/
     private String ship_dealer_code;
@@ -300,22 +300,6 @@ public class OrderItemsModel extends Bean {
 
     public void setShop_name(String shop_name) {
         this.shop_name = shop_name;
-    }
-
-    public long getScan_in_num() {
-        return scan_in_num;
-    }
-
-    public void setScan_in_num(long scan_in_num) {
-        this.scan_in_num = scan_in_num;
-    }
-
-    public Integer getScan_return_num() {
-        return scan_return_num;
-    }
-
-    public void setScan_return_num(Integer scan_return_num) {
-        this.scan_return_num = scan_return_num;
     }
 
     public String getShip_dealer_code() {

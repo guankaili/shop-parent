@@ -85,7 +85,7 @@ public class AutoFactory extends TaskFactory {
         work(new ConponStatusWork("ConponStatusWork", "门店优惠券，根据过期时间失效掉优惠券"), 1 * 60 * 1000);
 
         //门店状态  -- 两个月发生抢购行为变为抢购门店
-        work(new PanicBuyingShopWork("PanicBuyingShopWork", "抢购门店状态，两个月发生抢购行为变为抢购门店"), 1 * 60 * 1000);
+        work(new PanicBuyingShopWork("PanicBuyingShopWork", "抢购门店状态，两个月发生抢购行为变为抢购门店"), 10 * 60 * 1000);
 
 
         /**

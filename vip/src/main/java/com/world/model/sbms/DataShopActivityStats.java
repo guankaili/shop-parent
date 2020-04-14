@@ -29,8 +29,16 @@ public class DataShopActivityStats extends Bean implements Serializable {
      */
     private String shop_keeper;
 
+    /**
+     * 门店信息
+     */
+    private int shop_id;
+    private String shop_name;
 
-
+    /**
+     * 订单信息
+     */
+    private int item_id;
 
 
 }

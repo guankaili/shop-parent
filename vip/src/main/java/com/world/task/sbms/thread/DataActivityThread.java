@@ -42,6 +42,12 @@ public class DataActivityThread extends Thread {
     /**经销商业务员id*/
     private String dealerCmId;
 
+    /**
+     * 门店信息
+     */
+    private int shopId;
+    private String shopName;
+
     public DataActivityThread(OrderItemsModel orderItemsModel, CountDownLatch countDownLatch) {
         this.countDownLatch = countDownLatch;
         this.orderItemsModel = orderItemsModel;
@@ -64,18 +70,17 @@ public class DataActivityThread extends Thread {
              */
             this.dealActivityGoods(sqls, orderItemsModel);
 
+            //更新扫码明细表数据状态
+            this.updateOrderIteamFlagTS(sqls, orderItemId, 1, "处理成功");
 
-            /**
-             * 月度处理
-             */
-            if (null != sqls && sqls.size() > 0) {
-                //执行事务
-                txObj.excuteUpdateList(sqls);
-                if (txObj.commit()) {
-                    log.info("扫码月度结算报警REWARDINFO:【扫码月度结算处理】处理成功，门店ID【" + orderItemId + "】");
-                } else {
-                    log.info("扫码月度结算报警REWARDERROR:【扫码月度结算处理】处理失败，门店ID【" + orderItemId + "】");
-                }
+            //执行事务
+            txObj.excuteUpdateList(sqls);
+            if (txObj.commit()) {
+                log.info("扫码月度结算报警REWARDINFO:【扫码月度结算处理】处理成功，门店ID【" + orderItemId + "】");
+            } else {
+                //执行错误记录日志
+                updateOrderIteamFlag(orderItemId, 2, "处理失败");
+                log.info("扫码月度结算报警REWARDERROR:【扫码月度结算处理】处理失败，门店ID【" + orderItemId + "】");
             }
 
             long endTime = System.currentTimeMillis();
@@ -88,11 +93,11 @@ public class DataActivityThread extends Thread {
     }
 
 
-    private void dealActivityGoods(List<OneSql> sqls, OrderItemsModel orderItemsModel) {
+    public void dealActivityGoods(List<OneSql> sqls, OrderItemsModel orderItemsModel) {
         /**订单id*/
         int orderItemId = orderItemsModel.getItem_id();
         /**门店ID*/
-        int shopId = orderItemsModel.getShop_id();
+        shopId = orderItemsModel.getShop_id();
         /**经销商code*/
         String dealerCode = orderItemsModel.getShip_dealer_code();
         /**sku*/
@@ -112,7 +117,7 @@ public class DataActivityThread extends Thread {
         this.saveActivityGoods(sqls, orderItemsModel, activityGoodsModel);
     }
 
-    private void saveActivityGoods(List<OneSql> sqls, OrderItemsModel orderItemsModel, ActivityGoodsModel activityGoodsModel) {
+    public void saveActivityGoods(List<OneSql> sqls, OrderItemsModel orderItemsModel, ActivityGoodsModel activityGoodsModel) {
         /**
          * 订单信息
          */
@@ -125,8 +130,10 @@ public class DataActivityThread extends Thread {
         long shipNum = orderItemsModel.getShip_num();
         long refundNum = orderItemsModel.getRefund_num();
         long shipRefundNum = orderItemsModel.getShip_refund_num();
-        int shopId = orderItemsModel.getMember_id();
-        String shopName = orderItemsModel.getMember_name();
+        long scanInNum = orderItemsModel.getScan_in_num();
+        long scanReturnNum = orderItemsModel.getScan_return_num();
+//        int shopId = orderItemsModel.getMember_id();
+//        String shopName = orderItemsModel.getMember_name();
         String shipDealerCode = orderItemsModel.getShip_dealer_code();
         String shipDealerName = orderItemsModel.getShip_dealer_name();
         Date paymentTime = orderItemsModel.getPayment_time();
@@ -143,17 +150,26 @@ public class DataActivityThread extends Thread {
 //          Date activityEndDatetime = activityGoodsModel.getActivity_end_datetime();
         }
 
-        sql = "delete from data_shop_activity_stats where item_id = " + orderItemId;
-        log.info("sql = " + sql);
-        sqls.add(new OneSql(sql, 0, null, "sbms_main"));
+        /**
+         * 查询记录是否存在，如果存在则删除。此处是为防止查询到空数据锁表
+         */
+        DataShopActivityStats dataShopActivityStats = findDataShopActivity(orderItemId);
+
+        if (null != dataShopActivityStats && dataShopActivityStats.getItem_id() > 1) {
+            sql = "delete from data_shop_activity_stats where item_id = " + orderItemId;
+            log.info("sql = " + sql);
+            sqls.add(new OneSql(sql, -2, null, "sbms_main"));
+        }
 
         sql = "INSERT INTO data_shop_activity_stats(" +
                 "item_id, activity_id, activity_name, sku_sn, goods_name, goods_num, goods_price, " +
                 "ship_num, refund_num, ship_refund_num, shop_id, shop_name, dealer_code, dealer_name, dealer_cm_id, " +
-                "province_code, province_name,city_name,area_name,shop_keeper, payment_time, create_date) VALUES (" +
+                "province_code, province_name,city_name,area_name,shop_keeper, " +
+                "payment_time, create_date, scan_in_num, scan_return_num) VALUES (" +
                 "" + orderItemId + ", " + activityId + ", '" + activityName + "', '" + skuSn + "', '" + goodsName + "', " + goodsNum + ", " + goodsPrice + ", " +
                 "" + shipNum + ", " + refundNum + ", " + shipRefundNum + ", " + shopId + ", '" + shopName + "', '" + shipDealerCode + "', '" + shipDealerName + "', '" + dealerCmId + "', " +
-                "'" + provinceCode + "', '" + provinceName + "', '" + cityName + "', '" + areaName + "', '" + shopKeeper + "', '" + paymentTime + "', now() )";
+                "'" + provinceCode + "', '" + provinceName + "', '" + cityName + "', '" + areaName + "', '" + shopKeeper + "', " +
+                "'" + paymentTime + "', now(), " + scanInNum + ", " + scanReturnNum + " )";
         log.info("插入 sql = " + sql);
         sqls.add(new OneSql(sql, 1, null, "sbms_main"));
     }
@@ -185,7 +201,8 @@ public class DataActivityThread extends Thread {
     }
 
     public void findDealerCmId(int shopId){
-        sql = " select shop_city AS city_name,shop_county AS area_name,shop_keeper,dealer_cm_id, dealer_cm_name from es_shop_detail where shop_id = '" + shopId + "' ";
+        sql = "select shop_city AS city_name,shop_county AS area_name,shop_keeper,dealer_cm_id, dealer_cm_name, shop_id, shop_name "
+            + "from es_shop_detail where shop_id = '" + shopId + "' ";
         log.info("查询经销商业务员 sql = " + sql);
         DataShopActivityStats dataShopActivityStats = (DataShopActivityStats) Data.GetOne("shop_member", sql, null, DataShopActivityStats.class);
         log.info("dataShopActivityStats = " + JSON.toJSONString(dataShopActivityStats));
@@ -194,11 +211,41 @@ public class DataActivityThread extends Thread {
             cityName = null == dataShopActivityStats.getCity_name() ? "" : dataShopActivityStats.getCity_name();
             areaName = null == dataShopActivityStats.getArea_name() ? "" : dataShopActivityStats.getArea_name();
             shopKeeper = null == dataShopActivityStats.getShop_keeper() ? "" : dataShopActivityStats.getShop_keeper();
+            shopName = null == dataShopActivityStats.getShop_name() ? "" : dataShopActivityStats.getShop_name();
         }else {
             dealerCmId = "";
             cityName = "";
             areaName = "";
             shopKeeper = "";
+            shopName = "";
         }
+    }
+
+    public DataShopActivityStats findDataShopActivity(int orderItemId) {
+        //更新扫码明细数据状态
+        sql = "select item_id from data_shop_activity_stats where item_id = " + orderItemId;
+        log.info("sql = " + sql);
+        DataShopActivityStats dataShopActivityStats = (DataShopActivityStats) Data.GetOne("sbms_main", sql, null, DataShopActivityStats.class);
+        log.info("dataShopActivityStats = " + JSON.toJSONString(dataShopActivityStats));
+
+        return dataShopActivityStats;
+    }
+
+    public void updateOrderIteamFlag(int orderItemId, int showDealFlag, String showDealMsg) {
+        //更新扫码明细数据状态
+        sql = "update es_order_items set activity_deal_flag = " + showDealFlag + ", "
+            + "activity_deal_msg = '" + showDealMsg + "', activity_deal_datetime = now() "
+            + "where item_id = " + orderItemId;
+        log.info("sql = " + sql);
+        Data.Update("shop_trade", sql, null);
+    }
+
+    public void updateOrderIteamFlagTS(List<OneSql> sqls, int orderItemId, int showDealFlag, String showDealMsg) {
+        //更新扫码明细数据状态
+        sql = "update es_order_items set activity_deal_flag = " + showDealFlag + ", "
+            + "activity_deal_msg = '" + showDealMsg + "', activity_deal_datetime = now() "
+            + "where item_id = " + orderItemId;
+        log.info("sql = " + sql);
+        sqls.add(new OneSql(sql, 1, null, "shop_trade"));
     }
 }

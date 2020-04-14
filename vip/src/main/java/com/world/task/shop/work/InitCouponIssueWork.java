@@ -11,6 +11,7 @@ import com.world.model.shop.GoodsSkuModel;
 import com.world.model.shop.ShopConfIntegralModel;
 import com.world.model.shop.ShopConfRebateModel;
 import com.world.util.GoodsNameSplitUtil;
+import com.world.util.date.TimeUtil;
 
 public class InitCouponIssueWork extends Worker {
     /**
@@ -40,6 +41,8 @@ public class InitCouponIssueWork extends Worker {
         log.info("sql = " + sql);
         List<Bean> goodsSkuModelList = (List<Bean>) Data.Query("shop_goods", sql, null, GoodsSkuModel.class);
         log.info("goodsSkuModelList = " + JSON.toJSONString(goodsSkuModelList));
+
+
 
         //循环处理
         GoodsSkuModel goodsSkuModel = null;

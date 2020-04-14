@@ -42,7 +42,8 @@ public class DataActivityWorker extends Worker {
                 /**
                  * 数据抽取条件
                  */
-                sql = "SELECT fa.*, fb.payment_time FROM es_order_items fa, es_order fb WHERE fa.order_sn = fb.sn and ship_num > 0 limit 200 ";
+                sql = "SELECT fa.*, fb.payment_time FROM es_order_items fa, es_order fb "
+                    + "WHERE fa.order_sn = fb.sn and fa.activity_deal_flag = 0 and fb.pay_status = 'PAY_YES' limit 1000 ";
                 log.info("查询到的原始数据！！！！ sql = " + sql);
                 List<Bean> orderItemsModelList = (List<Bean>) Data.Query("shop_trade", sql, null, OrderItemsModel.class);
 

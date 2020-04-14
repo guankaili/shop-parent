@@ -91,8 +91,7 @@ public class DataShopScanOutDetailDStatsWorker extends Worker {
                             "es_shop_detail t " +
                             "WHERE " +
                             "t.shop_status IN ( 5, 6, 7 ) " +
-                            "AND to_days( t.contract_time ) = to_days( " +
-                            "now()) AND t.dealer_cm_id in (" + dealerCmId + ") " +
+                            " AND t.dealer_cm_id in (" + dealerCmId + ") " +
                             "GROUP BY " +
                             "t.dealer_cm_id ";
 

@@ -59,44 +59,17 @@ public class DataShopScanOutDetailDStatsThread extends Thread {
             }
 
             sql.append("" + startSql + " data_scan_out_detail_stats SET ");
-            if (dataShopScanOutDetailDStats.getDealerCode() != null) {
-                param.add(dataShopScanOutDetailDStats.getDealerCode());
-                sql.append(" dealer_code = ?, ");
-            }
-            if (dataShopScanOutDetailDStats.getDealerName() != null) {
-                param.add(dataShopScanOutDetailDStats.getDealerName());
-                sql.append(" dealer_name = ?, ");
-            }
-            if (dataShopScanOutDetailDStats.getDealerCmId() != null) {
-                param.add(dataShopScanOutDetailDStats.getDealerCmId());
-                sql.append(" dealer_cm_id = ?, ");
-            }
-            if (dataShopScanOutDetailDStats.getLargeAreaCode() != null) {
-                param.add(dataShopScanOutDetailDStats.getLargeAreaCode());
-                sql.append(" large_area_code = ?, ");
-            }
-            if (dataShopScanOutDetailDStats.getLargeArea() != null) {
-                param.add(dataShopScanOutDetailDStats.getLargeArea());
-                sql.append(" large_area_name = ?, ");
-            }
-            if (dataShopScanOutDetailDStats.getShopProvinceId() != null) {
-                param.add(dataShopScanOutDetailDStats.getShopProvinceId());
-                sql.append(" province_code = ?, ");
-            }
-            if (dataShopScanOutDetailDStats.getShopProvince() != null) {
-                param.add(dataShopScanOutDetailDStats.getShopProvince());
-                sql.append(" province_name = ?, ");
-            }
-            param.add(dataShopScanOutDetailDStats.getShopOutQuantity());
-            sql.append(" shop_out_quantity = ?, ");
-            param.add(dataShopScanOutDetailDStats.getShopSignQuantity());
-            sql.append(" shop_sign_quantity = ?, ");
-            param.add(dataShopScanOutDetailDStats.getShopJoinOutQuantity());
-            sql.append(" shop_join_out_quantity = ?, ");
-            if (dataShopScanOutDetailDStats.getShopJoinOutRate() != null) {
-                param.add(dataShopScanOutDetailDStats.getShopJoinOutRate());
-                sql.append(" shop_join_out_rate = ?, ");
-            }
+            if (dataShopScanOutDetailDStats.getDealerCode() != null) { param.add(dataShopScanOutDetailDStats.getDealerCode());sql.append(" dealer_code = ?, "); }
+            if (dataShopScanOutDetailDStats.getDealerName() != null) { param.add(dataShopScanOutDetailDStats.getDealerName());sql.append(" dealer_name = ?, "); }
+            if (dataShopScanOutDetailDStats.getDealerCmId() != null) { param.add(dataShopScanOutDetailDStats.getDealerCmId());sql.append(" dealer_cm_id = ?, "); }
+            if (dataShopScanOutDetailDStats.getLargeAreaCode() != null) { param.add(dataShopScanOutDetailDStats.getLargeAreaCode());sql.append(" large_area_code = ?, "); }
+            if (dataShopScanOutDetailDStats.getLargeArea() != null) { param.add(dataShopScanOutDetailDStats.getLargeArea());sql.append(" large_area_name = ?, "); }
+            if (dataShopScanOutDetailDStats.getShopProvinceId() != null) { param.add(dataShopScanOutDetailDStats.getShopProvinceId());sql.append(" province_code = ?, "); }
+            if (dataShopScanOutDetailDStats.getShopProvince() != null) { param.add(dataShopScanOutDetailDStats.getShopProvince());sql.append(" province_name = ?, "); }
+            param.add(dataShopScanOutDetailDStats.getShopOutQuantity());sql.append(" shop_out_quantity = ?, ");
+            param.add(dataShopScanOutDetailDStats.getShopSignQuantity());sql.append(" shop_sign_quantity = ?, ");
+            param.add(dataShopScanOutDetailDStats.getShopJoinOutQuantity());sql.append(" shop_join_out_quantity = ?, ");
+            if (dataShopScanOutDetailDStats.getShopJoinOutRate() != null) { param.add(dataShopScanOutDetailDStats.getShopJoinOutRate());sql.append(" shop_join_out_rate = ?, "); }
             param.add(DateFormatUtils.format(new Date(), "yyyy-MM-dd"));
             sql.append(" shop_scan_out_detail_date = ?, ");
             param.add(DateFormatUtils.format(new Date(), "yyyy-MM-dd HH:mm:ss"));

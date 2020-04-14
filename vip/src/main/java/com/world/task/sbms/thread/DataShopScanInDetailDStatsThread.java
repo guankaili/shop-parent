@@ -66,6 +66,7 @@ public class DataShopScanInDetailDStatsThread extends Thread {
             if (dataShopScanInDetailDStats.getShopProvinceId() != null){param.add(dataShopScanInDetailDStats.getShopProvinceId());sql.append(" province_code = ?, ");}
             if (dataShopScanInDetailDStats.getShopProvince() != null){param.add(dataShopScanInDetailDStats.getShopProvince());sql.append(" province_name = ?, ");}
             param.add(dataShopScanInDetailDStats.getShopInQuantity());sql.append(" shop_in_quantity = ?, ");
+            param.add(dataShopScanInDetailDStats.getShopSignQuantity());sql.append(" shop_sign_quantity = ?, ");
             param.add(dataShopScanInDetailDStats.getShopJoinInQuantity());sql.append(" shop_join_in_quantity = ?, ");
             if (dataShopScanInDetailDStats.getShopJoinInRate() != null){param.add(dataShopScanInDetailDStats.getShopJoinInRate());sql.append(" shop_join_in_rate = ?, ");}
             param.add(DateFormatUtils.format(new Date(), "yyyy-MM-dd"));sql.append(" shop_scan_in_detail_date = ?, ");
